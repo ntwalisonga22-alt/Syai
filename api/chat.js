@@ -1,45 +1,39 @@
 export default async function handler(req, res) {
-    // 1. Get the key from your Vercel settings
-    const GEMINI_KEY = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY;
 
-    if (!GEMINI_KEY) {
-        return res.status(200).json({ reply: "SYSTEM ERROR: API Key not found in Vercel. Please add GEMINI_API_KEY to Environment Variables." });
+    if (!key) {
+        return res.status(200).json({ reply: "SYSTEM ERROR: API Key missing in Vercel Settings." });
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: "Only POST allowed" });
-    }
+    if (req.method !== 'POST') return res.status(405).send("Method Not Allowed");
 
     const { message } = req.body;
 
-    try {
-        // 2. STABLE URL: This is the exact URL Google requires for Gemini 1.5 Flash
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+    // We will try the newest model first, then fall back to the older one if needed
+    const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+    
+    for (const modelName of models) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
+            });
 
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: message }] }]
-            })
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-        
-        // 3. CHECK FOR GOOGLE ERRORS
-        if (data.error) {
-            return res.status(200).json({ reply: "GOOGLE ERROR: " + data.error.message });
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
+            }
+            
+            // If Google says "not found" for the first model, the loop continues to the next one
+            if (data.error && data.error.code !== 404) {
+                return res.status(200).json({ reply: "GOOGLE ERROR: " + data.error.message });
+            }
+        } catch (err) {
+            console.error("Try failed for " + modelName);
         }
-
-        // 4. SEND RESPONSE TO YOUR SITE
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            const aiReply = data.candidates[0].content.parts[0].text;
-            res.status(200).json({ reply: aiReply });
-        } else {
-            res.status(200).json({ reply: "The AI received the message but didn't know what to say. Try again." });
-        }
-
-    } catch (error) {
-        res.status(200).json({ reply: "CONNECTION ERROR: Could not reach Google AI." });
     }
+
+    res.status(200).json({ reply: "All connection attempts failed. Please check your API key status." });
 }
