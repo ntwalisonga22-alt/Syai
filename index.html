@@ -3,37 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SY AI | Neural Assistant</title>
+    <title>SYAI | Neural Assistant</title>
     <style>
         * { box-sizing: border-box; }
         body { background: #0a0a0a; color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
         
-        header { padding: 20px; border-bottom: 1px solid #333; text-align: center; font-weight: bold; letter-spacing: 2px; }
+        header { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #333; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            background: #0f0f0f;
+        }
+
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-svg { width: 40px; height: 40px; }
+        .brand-name { font-weight: 900; letter-spacing: 2px; font-size: 1.2rem; }
+
+        .status-container { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #888; }
+        .status-light { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
         
         #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         
-        .msg { max-width: 80%; padding: 15px 20px; border-radius: 15px; line-height: 1.5; font-size: 1.1rem; }
-        .user-msg { background: #333; align-self: flex-end; color: #fff; border-bottom-right-radius: 2px; }
-        .ai-msg { background: #fff; color: #000; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg { max-width: 80%; padding: 15px 20px; border-radius: 15px; line-height: 1.5; font-size: 1.1rem; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .user-msg { background: #1a1a1a; align-self: flex-end; color: #fff; border: 1px solid #333; border-bottom-right-radius: 2px; }
+        .ai-msg { background: #fff; color: #000; align-self: flex-start; border-bottom-left-radius: 2px; font-weight: 500; }
 
-        .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: #0a0a0a; }
-        input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 10px; outline: none; font-size: 1rem; }
-        button { background: #fff; color: #000; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #ccc; }
+        .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: #0a0a0a; position: relative; }
+        input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 12px; outline: none; font-size: 1rem; transition: 0.3s; }
+        input:focus { border-color: #00ff88; }
+        button { background: #fff; color: #000; border: none; padding: 0 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #00ff88; }
 
-        #loading { display: none; font-size: 0.8rem; color: #888; margin-bottom: 10px; }
+        #loading { position: absolute; top: -20px; left: 20px; font-size: 0.7rem; color: #00ff88; display: none; }
     </style>
 </head>
 <body>
-    <header>SY AI SYSTEM v1.0</header>
+    <header>
+        <div class="logo-box">
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4"/>
+                <path d="M30 70C30 70 35 40 50 40C65 40 70 70 70 70" stroke="#00ff88" stroke-width="6" stroke-linecap="round"/>
+                <path d="M50 20V40" stroke="white" stroke-width="6" stroke-linecap="round"/>
+                <circle cx="50" cy="40" r="4" fill="#00ff88"/>
+            </svg>
+            <span class="brand-name">SYAI SYSTEM</span>
+        </div>
+        <div class="status-container">
+            <div class="status-light"></div>
+            CORE ONLINE
+        </div>
+    </header>
     
     <div id="chat-container">
-        <div class="msg ai-msg">System initialized. How can I assist you today?</div>
+        <div class="msg ai-msg">Hello! I am SYAI, your expert coding assistant. How can I help you build today?</div>
     </div>
 
     <div class="input-area">
-        <div id="loading">AI is thinking...</div>
-        <input type="text" id="user-input" placeholder="Enter command or question..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <div id="loading">SYAI IS THINKING...</div>
+        <input type="text" id="user-input" placeholder="Type your command..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button onclick="sendMessage()">SEND</button>
     </div>
 
@@ -41,14 +72,15 @@
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const container = document.getElementById('chat-container');
+            const loader = document.getElementById('loading');
             const message = input.value.trim();
 
             if (!message) return;
 
-            // Add User Message
             container.innerHTML += `<div class="msg user-msg">${message}</div>`;
             input.value = '';
             container.scrollTop = container.scrollHeight;
+            loader.style.display = 'block';
 
             try {
                 const response = await fetch('/api/chat', {
@@ -58,12 +90,13 @@
                 });
                 
                 const data = await response.json();
+                loader.style.display = 'none';
                 
-                // Add AI Response
                 container.innerHTML += `<div class="msg ai-msg">${data.reply}</div>`;
                 container.scrollTop = container.scrollHeight;
             } catch (error) {
-                container.innerHTML += `<div class="msg ai-msg">Error: Connection lost.</div>`;
+                loader.style.display = 'none';
+                container.innerHTML += `<div class="msg ai-msg">Error: Interface timeout.</div>`;
             }
         }
     </script>
