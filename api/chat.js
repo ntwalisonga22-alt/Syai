@@ -4,17 +4,11 @@ export default async function handler(req, res) {
 
     if (!key) return res.status(200).json({ reply: "Error: API Key missing." });
 
-    // --- SYAI PERSONALITY CONFIG ---
-    const systemPrompt = `
-        Your name is "SYAI". 
-        Whenever someone asks who you are or what your name is, you must identify as SYAI.
-        You are a world-class Coding Expert helping the user build websites.
-        - Be concise, professional, and provide fully updated code.
-    `;
-    // -------------------------------
+    const systemPrompt = "Your name is SYAI. You are a world-class Coding Expert. Always identify as SYAI.";
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        // We use v1beta here specifically to support system_instruction
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -29,10 +23,15 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
+        // If this still gives an error, it will show you exactly why
+        if (data.error) {
+            return res.status(200).json({ reply: "GOOGLE ERROR: " + data.error.message });
+        }
+
         if (data.candidates && data.candidates[0].content.parts[0].text) {
             res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
         } else {
-            res.status(200).json({ reply: "AI Error: " + (data.error?.message || "Brain fog.") });
+            res.status(200).json({ reply: "SYAI is thinking... please try again." });
         }
     } catch (err) {
         res.status(200).json({ reply: "Connection Error: " + err.message });
