@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
     const key = process.env.GEMINI_API_KEY;
-    const { message, model = "gemini-3-flash", history = [] } = req.body;
+    const { message, model = "gemini-2.5-flash", history = [] } = req.body;
 
     if (!key) return res.status(200).json({ reply: "API Key Missing." });
 
@@ -9,26 +9,25 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                system_instruction: { parts: [{ text: "Your name is SY AI. You have access to Google Search. You can generate code and answer any complex question." }] },
-                // NEW: History allows SY AI to remember what you just said
+                // Keeps SY AI's personality consistent
+                system_instruction: { parts: [{ text: "Your name is SY AI. You are a helpful assistant with web search and coding expertise." }] },
+                // Sends history so it remembers previous messages
                 contents: [...history, { role: "user", parts: [{ text: message }] }],
-                tools: [
-                    { google_search: {} }, // ENABLES WEB SEARCH
-                    { code_execution: {} } // ENABLES REAL-TIME CODING
-                ]
+                tools: [{ google_search: {} }] // ENABLES WEB SEARCH
             })
         });
 
         const data = await response.json();
-        let aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "SY AI is having trouble thinking. Try again.";
+        let aiReply = "SY AI Error: Could not process request.";
 
-        // Support for Grounding Metadata (Citations)
-        if (data.candidates?.[0]?.groundingMetadata) {
-            aiReply += "\n\n sources checked via Google Search.";
+        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            aiReply = data.candidates[0].content.parts[0].text;
+        } else if (data.error) {
+            aiReply = `SY AI ERROR: ${data.error.message}`;
         }
 
         res.status(200).json({ reply: aiReply });
     } catch (err) {
-        res.status(200).json({ reply: "Core link broken." });
+        res.status(200).json({ reply: "SY AI Connection Lost." });
     }
 }
