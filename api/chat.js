@@ -1,34 +1,41 @@
 export default async function handler(req, res) {
     const key = process.env.GEMINI_API_KEY;
-    // Updated default to gemini-2.5-flash
-    const { message, model = "gemini-2.5-flash" } = req.body;
+    const { message, model = "gemini-3-flash", checkStatus = false } = req.body;
 
-    if (!key) return res.status(200).json({ reply: "API Key is missing." });
+    if (!key) return res.status(200).json({ reply: "Error: API Key missing in environment." });
+
+    // NEW: Health Check Logic
+    if (checkStatus) {
+        try {
+            const test = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+            const data = await test.json();
+            if (data.models) return res.status(200).json({ status: "Connected", modelCount: data.models.length });
+            return res.status(200).json({ status: "Error", message: data.error?.message || "Invalid Key" });
+        } catch (e) { return res.status(200).json({ status: "Offline" }); }
+    }
 
     try {
+        // Updated to use v1beta with the 2025-ready model IDs
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                system_instruction: { parts: [{ text: "Your name is SY AI. You are a coding expert." }] },
                 contents: [{ parts: [{ text: message }] }]
             })
         });
 
         const data = await response.json();
         
-        let aiReply = "";
         if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            aiReply = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-            // This will now tell you if the model ID is wrong again
-            aiReply = `SY AI Error (${data.error.code}): ${data.error.message}`;
-        } else {
-            aiReply = "SY AI is offline. Please check your model settings.";
-        }
+            return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
+        } 
+        
+        // Detailed error reporting to find out exactly why it's failing
+        return res.status(200).json({ 
+            reply: `SY AI Error: ${data.error?.message || "Unknown API Response Format"}` 
+        });
 
-        res.status(200).json({ reply: aiReply });
     } catch (err) {
-        res.status(200).json({ reply: "Connection to SY AI Core lost." });
+        res.status(200).json({ reply: "SY AI Connection Failed." });
     }
 }
