@@ -18,7 +18,8 @@
         .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; font-weight: 900; font-size: 22px; color: var(--primary); }
         .new-chat-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
         #history-list { flex: 1; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 10px; }
-        .history-item { padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
+        .history-item { padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        .history-item:hover { border-color: var(--primary); }
 
         /* MAIN VIEW */
         #main-view { flex: 1; display: flex; flex-direction: column; }
@@ -28,7 +29,7 @@
 
         /* CHAT */
         #chat-window { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .msg { max-width: 80%; padding: 15px; border-radius: 12px; position: relative; line-height: 1.5; }
+        .msg { max-width: 80%; padding: 15px; border-radius: 12px; position: relative; line-height: 1.5; word-wrap: break-word; }
         .user { background: var(--msg-user); align-self: flex-end; }
         .ai { background: #fff; color: #000; align-self: flex-start; border-left: 5px solid var(--primary); }
         
@@ -38,22 +39,10 @@
         .icon-btn { background: #333; border: none; padding: 10px; border-radius: 50%; cursor: pointer; font-size: 20px; transition: 0.2s; }
         .mic-active { background: red !important; }
 
-        /* LOGIN MODAL (Now optional) */
-        #login-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-        .login-box { background: #1a1a1a; margin: 15% auto; padding: 40px; border: 1px solid var(--primary); width: 300px; border-radius: 20px; text-align: center; }
+        #quota-display { font-size: 12px; color: var(--primary); border: 1px solid var(--primary); padding: 4px 10px; border-radius: 20px; }
     </style>
 </head>
 <body>
-
-<div id="login-modal">
-    <div class="login-box">
-        <h3 style="color:var(--primary)">SY AI Login</h3>
-        <p style="color:#888">Sign in to save your chat history and preferences.</p>
-        <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleLogin"></div>
-        <div class="g_id_signin" data-type="standard"></div>
-        <button onclick="closeLogin()" style="background:transparent; color:#555; border:none; margin-top:15px; text-decoration:underline; cursor:pointer;">Continue as Guest</button>
-    </div>
-</div>
 
 <div id="sidebar">
     <div class="logo-container">
@@ -65,10 +54,8 @@
         SY AI PRO
     </div>
     
-    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
-    
-    <div id="history-list">
-        </div>
+    <button class="new-chat-btn" onclick="createNewChat()">+ New Chat</button>
+    <div id="history-list"></div>
 
     <div id="user-status" style="margin-top:auto; font-size:12px; border-top:1px solid #333; padding-top:10px;">
         👤 Mode: <span id="user-label">Guest</span><br>
@@ -88,6 +75,7 @@
                 <option value="light">Light</option>
                 <option value="cyber">Cyber</option>
             </select>
+            <div id="quota-display">API: <span id="req-count">15</span> Left</div>
         </div>
         <div style="font-size:14px; opacity: 0.8;">Developed by S. Yvan</div>
     </header>
@@ -104,27 +92,52 @@
 </div>
 
 <script>
-    let user = JSON.parse(localStorage.getItem('sy_user') || 'null');
+    let allChats = JSON.parse(localStorage.getItem('sy_history') || '[]');
+    let currentChatId = Date.now().toString();
     let currentHistory = [];
+    let reqLimit = 15;
 
-    function newChat() {
-        document.getElementById('chat-window').innerHTML = `<div class="msg ai">New Session Started. I am SY AI, trained by S. Yvan. How can I assist you?</div>`;
+    // --- QUOTA TIMER LOGIC ---
+    function updateQuotaUI() {
+        document.getElementById('req-count').innerText = reqLimit;
+        document.getElementById('req-count').style.color = reqLimit < 3 ? "red" : "var(--primary)";
+    }
+
+    // Refresh quota every minute
+    setInterval(() => { reqLimit = 15; updateQuotaUI(); }, 60000);
+
+    function createNewChat() {
+        currentChatId = Date.now().toString();
         currentHistory = [];
+        document.getElementById('chat-window').innerHTML = `<div class="msg ai">New Session Started. I am SY AI, trained by S. Yvan.</div>`;
+        renderHistory();
     }
 
-    function changeTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = allChats.slice().reverse().map(chat => `
+            <div class="history-item" onclick="loadChat('${chat.id}')">
+                <span>${chat.title}</span>
+                <span onclick="deleteChat('${chat.id}', event)" style="color:red">×</span>
+            </div>
+        `).join('');
     }
 
-    function handleLogin(response) {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        user = { name: payload.name };
-        localStorage.setItem('sy_user', JSON.stringify(user));
-        document.getElementById('user-label').innerText = user.name;
-        closeLogin();
+    function loadChat(id) {
+        const chat = allChats.find(c => c.id === id);
+        currentChatId = id;
+        currentHistory = chat.messages;
+        document.getElementById('chat-window').innerHTML = chat.messages.map(m => 
+            `<div class="msg ${m.role === 'user' ? 'user' : 'ai'}">${m.parts[0].text}</div>`
+        ).join('');
     }
-    
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+
+    function deleteChat(id, e) {
+        e.stopPropagation();
+        allChats = allChats.filter(c => c.id !== id);
+        localStorage.setItem('sy_history', JSON.stringify(allChats));
+        renderHistory();
+    }
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.onresult = (e) => { document.getElementById('user-input').value = e.results[0][0].transcript; sendMessage(); };
@@ -137,7 +150,10 @@
         const model = document.getElementById('model-select').value;
         if(!text) return;
 
-        // Login check removed from here to allow unlimited searches
+        if(reqLimit <= 0) {
+            alert("S. Yvan's AI needs a 60-second break. Please wait for the counter to reset.");
+            return;
+        }
 
         const win = document.getElementById('chat-window');
         win.innerHTML += `<div class="msg user">${text}</div>`;
@@ -148,25 +164,39 @@
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, history: currentHistory, user: user, model: model })
+                body: JSON.stringify({ message: text, history: currentHistory, model: model })
             });
             const data = await res.json();
             
-            let html = `<div class="msg ai">${data.reply}`;
-            if(data.image) html += `<br><img src="${data.image}" style="width:100%; border-radius:8px; margin-top:10px;"><br><button onclick="downloadImg('${data.image}')" style="cursor:pointer; background:var(--primary); border:none; padding:5px; margin-top:5px; border-radius:4px;">Download</button>`;
+            reqLimit--;
+            updateQuotaUI();
+
+            // Handle Error vs Success Display
+            let bubbleStyle = data.isError ? "background:#ff4444; color:white;" : "";
+            let html = `<div class="msg ai" style="${bubbleStyle}">${data.reply}`;
+            if(data.image) html += `<br><img src="${data.image}" style="width:100%; border-radius:8px; margin-top:10px;">`;
             html += `</div>`;
             
             win.innerHTML += html;
             win.scrollTop = win.scrollHeight;
 
-            currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply || "Image"}]});
-        } catch (e) { win.innerHTML += `<div class="msg ai">Error connecting to SY AI.</div>`; }
+            if(!data.isError) {
+                currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply}]});
+                saveChat(text);
+            }
+        } catch (e) { win.innerHTML += `<div class="msg ai" style="background:red; color:white;">Server Error.</div>`; }
     }
 
-    function downloadImg(base) { const a = document.createElement('a'); a.href = base; a.download = 'SYAI_Image.png'; a.click(); }
-    
-    // Initial UI Setup
-    if(user) document.getElementById('user-label').innerText = user.name;
+    function saveChat(title) {
+        const index = allChats.findIndex(c => c.id === currentChatId);
+        if(index > -1) allChats[index].messages = currentHistory;
+        else allChats.push({id: currentChatId, title: title.substring(0,20), messages: currentHistory});
+        localStorage.setItem('sy_history', JSON.stringify(allChats));
+        renderHistory();
+    }
+
+    function changeTheme(theme) { document.documentElement.setAttribute('data-theme', theme); }
+    renderHistory();
 </script>
 </body>
 </html>
