@@ -5,104 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYAI | Neural Assistant</title>
     <style>
-        :root { --primary-color: #00ff88; --bg-dark: #0a0a0a; }
-        * { box-sizing: border-box; }
-        body { background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #0f0f0f; }
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 15px; }
-        .user-msg { background: #222; align-self: flex-end; }
-        .ai-msg { background: #fff; color: #000; align-self: flex-start; }
-        
-        /* Modal for Settings */
-        #settings-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: #1a1a1a; margin: 15% auto; padding: 25px; border: 1px solid var(--primary-color); width: 320px; border-radius: 15px; }
-        
-        /* FIXED SELECT BOX */
-        #model-select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; background: #222; color: #fff; border: 1px solid #444; font-size: 1rem; cursor: pointer; }
+        :root {
+            --primary-color: #00ff88; /* Default */
+            --bg-dark: #0a0a0a;
+            --panel-dark: #0f0f0f;
+        }
 
-        .input-area { padding: 20px; display: flex; gap: 8px; background: #0f0f0f; border-top: 1px solid #333; }
-        input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 10px; }
-        button { background: var(--primary-color); border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; background: var(--panel-dark); }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-svg { width: 35px; height: 35px; }
+        .brand-name { font-weight: 900; letter-spacing: 2px; font-size: 1.1rem; color: var(--primary-color); }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .settings-btn { cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 12px 18px; border-radius: 15px; line-height: 1.4; animation: fadeIn 0.2s ease forwards; }
+        .user-msg { background: #222; align-self: flex-end; border: 1px solid #444; }
+        .ai-msg { background: #fff; color: #000; align-self: flex-start; font-weight: 500; }
+
+        /* Settings Modal */
+        #settings-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: #1a1a1a; margin: 10% auto; padding: 25px; border: 1px solid var(--primary-color); width: 320px; border-radius: 15px; text-align: center; }
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .color-dot { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; margin: auto; }
+        
+        #model-select { width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 8px; margin-top: 10px; }
+
+        .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--panel-dark); }
+        input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 10px; outline: none; }
+        input:focus { border-color: var(--primary-color); }
+        button { background: var(--primary-color); color: #000; border: none; padding: 0 15px; border-radius: 10px; font-weight: 900; cursor: pointer; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     <header>
-        <span style="color:var(--primary-color); font-weight:900;">SYAI</span>
-        <div onclick="toggleSettings()" style="cursor:pointer;">⚙️ Settings</div>
+        <div class="logo-box">
+            <svg class="logo-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="var(--primary-color)" stroke-width="5" fill="none"/>
+                <path d="M35 65C40 55 60 55 65 65" stroke="white" stroke-width="5" stroke-linecap="round"/>
+                <path d="M50 25V45" stroke="var(--primary-color)" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-name">SYAI</span>
+        </div>
+        <div class="header-actions">
+            <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+        </div>
     </header>
 
     <div id="settings-modal" onclick="toggleSettings()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="margin-top:0;">Intelligence Model</h3>
-            <select id="model-select" onchange="updateModelSettings()">
-                <option value="gemini-1.5-flash">Flash (Fast & Free)</option>
-                <option value="gemini-1.5-pro">Pro (Smartest - Coding)</option>
+            <h3>THEME COLOR</h3>
+            <div class="color-grid">
+                <div class="color-dot" style="background: #00ff88;" onclick="setTheme('#00ff88')"></div>
+                <div class="color-dot" style="background: #00d9ff;" onclick="setTheme('#00d9ff')"></div>
+                <div class="color-dot" style="background: #ff0077;" onclick="setTheme('#ff0077')"></div>
+                <div class="color-dot" style="background: #ff9d00;" onclick="setTheme('#ff9d00')"></div>
+                <div class="color-dot" style="background: #a200ff;" onclick="setTheme('#a200ff')"></div>
+                <div class="color-dot" style="background: #ffffff;" onclick="setTheme('#ffffff')"></div>
+            </div>
+
+            <h3 style="margin-top:20px;">BRAIN MODEL</h3>
+            <select id="model-select" onchange="updateModel()">
+                <option value="gemini-1.5-flash">Flash (Fast)</option>
+                <option value="gemini-1.5-pro">Pro (Smart)</option>
             </select>
-            <p style="font-size:0.7rem; color:#888; margin-top:15px;">Model saves automatically.</p>
         </div>
     </div>
 
-    <div id="chat-container"></div>
+    <div id="chat-container">
+        <div class="msg ai-msg">SYAI Online. System theme and model configurations loaded.</div>
+    </div>
+
     <div class="input-area">
-        <button id="mic-btn" onclick="toggleMic()">🎤</button>
-        <input type="text" id="user-input" placeholder="Ask SYAI..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="toggleMic()" id="mic-btn" style="background:transparent; border:1px solid #333; color:var(--primary-color);">🎤</button>
+        <input type="text" id="user-input" placeholder="Enter command..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button onclick="sendMessage()" id="send-btn">SEND</button>
     </div>
 
     <script>
+        // PERSISTENCE LOGIC
         let currentModel = localStorage.getItem('syai-model') || 'gemini-1.5-flash';
+        let currentTheme = localStorage.getItem('syai-theme') || '#00ff88';
+        
+        // Apply saved settings on load
+        document.documentElement.style.setProperty('--primary-color', currentTheme);
         document.getElementById('model-select').value = currentModel;
 
-        function toggleSettings() {
-            const modal = document.getElementById('settings-modal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        function setTheme(color) {
+            currentTheme = color;
+            document.documentElement.style.setProperty('--primary-color', color);
+            localStorage.setItem('syai-theme', color);
         }
 
-        function updateModelSettings() {
+        function updateModel() {
             currentModel = document.getElementById('model-select').value;
             localStorage.setItem('syai-model', currentModel);
-            console.log("Model switched to: " + currentModel);
         }
 
-        // --- SPEECH RECOGNITION (Talk to SYAI) ---
+        function toggleSettings() {
+            const m = document.getElementById('settings-modal');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // VOICE LOGIC
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        function toggleMic() { recognition.start(); document.getElementById('mic-btn').innerText = "●"; }
+        function toggleMic() { 
+            recognition.start(); 
+            document.getElementById('mic-btn').innerText = "●";
+            document.getElementById('mic-btn').style.color = "red";
+        }
         recognition.onresult = (e) => {
             document.getElementById('user-input').value = e.results[0][0].transcript;
             document.getElementById('mic-btn').innerText = "🎤";
+            document.getElementById('mic-btn').style.color = "var(--primary-color)";
             sendMessage();
         };
 
-        // --- SPEECH SYNTHESIS (SYAI Talks Back) ---
         function speak(text) {
-            const synth = window.speechSynthesis;
             const utter = new SpeechSynthesisUtterance(text);
-            utter.rate = 1.1; // Slightly faster for efficiency
-            synth.speak(utter);
+            window.speechSynthesis.speak(utter);
         }
 
+        // CHAT LOGIC
         async function sendMessage() {
             const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if (!text) return;
+            const msg = input.value.trim();
+            if(!msg) return;
 
             const chat = document.getElementById('chat-container');
-            chat.innerHTML += `<div class="msg user-msg">${text}</div>`;
+            chat.innerHTML += `<div class="msg user-msg">${msg}</div>`;
             input.value = '';
 
-            const res = await fetch('/api/chat', {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, model: currentModel }) // Uses currentModel
+                body: JSON.stringify({ message: msg, model: currentModel })
             });
             
-            const data = await res.json();
+            const data = await response.json();
             chat.innerHTML += `<div class="msg ai-msg">${data.reply}</div>`;
             chat.scrollTop = chat.scrollHeight;
-
-            // Voice Feedback
-            speak(data.reply); 
+            speak(data.reply);
         }
     </script>
 </body>
