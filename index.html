@@ -5,16 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYAI | Neural Assistant</title>
     <style>
+        /* CSS VARIABLES: This is where the magic happens */
+        :root {
+            --primary-color: #00ff88; /* Default Neon Green */
+            --bg-dark: #0a0a0a;
+            --panel-dark: #0f0f0f;
+            --text-main: #ffffff;
+        }
+
         * { box-sizing: border-box; }
-        body { background: #0a0a0a; color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; background: #0f0f0f; }
+        header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; background: var(--panel-dark); }
         .logo-box { display: flex; align-items: center; gap: 10px; }
         .logo-svg { width: 35px; height: 35px; }
-        .brand-name { font-weight: 900; letter-spacing: 2px; font-size: 1.1rem; color: #00ff88; }
-        .status-container { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #888; text-transform: uppercase; }
-        .status-light { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+        .brand-name { font-weight: 900; letter-spacing: 2px; font-size: 1.1rem; color: var(--primary-color); }
         
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .status-container { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #888; text-transform: uppercase; }
+        .status-light { width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; box-shadow: 0 0 10px var(--primary-color); }
+        
+        /* Settings Icon */
+        .settings-btn { cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
+        .settings-btn:hover { filter: grayscale(0); transform: rotate(45deg); }
+
+        /* Settings Modal */
+        #settings-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: #1a1a1a; margin: 15% auto; padding: 30px; border: 1px solid var(--primary-color); width: 300px; border-radius: 15px; text-align: center; }
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .color-dot { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; margin: auto; }
+        .color-dot:hover { transform: scale(1.1); border-color: white; }
+
         #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at top, #111 0%, #0a0a0a 100%); }
         .msg { max-width: 85%; padding: 12px 18px; border-radius: 15px; line-height: 1.4; font-size: 1rem; animation: fadeIn 0.2s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -22,30 +43,42 @@
         .user-msg { background: #222; align-self: flex-end; border: 1px solid #444; border-bottom-right-radius: 2px; }
         .ai-msg { background: #fff; color: #000; align-self: flex-start; border-bottom-left-radius: 2px; font-weight: 500; }
 
-        .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: #0f0f0f; }
+        .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--panel-dark); }
         input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 10px; outline: none; transition: 0.2s; }
-        input:focus { border-color: #00ff88; }
-        button { background: #00ff88; color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; min-width: 100px; }
-        button:disabled { background: #333; color: #777; cursor: not-allowed; }
+        input:focus { border-color: var(--primary-color); }
+        button { background: var(--primary-color); color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; min-width: 100px; }
+        button:disabled { background: #333 !important; color: #777; cursor: not-allowed; }
 
-        #loading { font-size: 0.7rem; color: #00ff88; margin-bottom: 5px; display: none; padding-left: 20px; }
+        #loading { font-size: 0.7rem; color: var(--primary-color); margin-bottom: 5px; display: none; padding-left: 20px; }
     </style>
 </head>
 <body>
     <header>
         <div class="logo-box">
-            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="45" stroke="#00ff88" stroke-width="5"/>
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="45" stroke="var(--primary-color)" stroke-width="5"/>
                 <path d="M35 65C40 55 60 55 65 65" stroke="white" stroke-width="5" stroke-linecap="round"/>
-                <path d="M50 25V45" stroke="#00ff88" stroke-width="5" stroke-linecap="round"/>
+                <path d="M50 25V45" stroke="var(--primary-color)" stroke-width="5" stroke-linecap="round"/>
             </svg>
             <span class="brand-name">SYAI</span>
         </div>
-        <div class="status-container"><div class="status-light"></div>CORE ONLINE</div>
+        <div class="header-actions">
+            <div class="status-container"><div class="status-light"></div>CORE ONLINE</div>
+            <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+        </div>
     </header>
+
+    <div id="settings-modal" onclick="toggleSettings()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>THEME COLOR</h3>
+            <div class="color-grid">
+                <div class="color-dot" style="background: #00ff88;" onclick="setTheme('#00ff88')"></div> <div class="color-dot" style="background: #00d9ff;" onclick="setTheme('#00d9ff')"></div> <div class="color-dot" style="background: #ff0077;" onclick="setTheme('#ff0077')"></div> <div class="color-dot" style="background: #ff9d00;" onclick="setTheme('#ff9d00')"></div> <div class="color-dot" style="background: #a200ff;" onclick="setTheme('#a200ff')"></div> <div class="color-dot" style="background: #ffffff;" onclick="setTheme('#ffffff')"></div> </div>
+            <p style="font-size: 0.7rem; color: #888; margin-top: 20px;">Settings auto-save to browser.</p>
+        </div>
+    </div>
     
     <div id="chat-container">
-        <div class="msg ai-msg">System initialized. I am SYAI. Ready for your instructions.</div>
+        <div class="msg ai-msg">System initialized. I am SYAI. How can I help you?</div>
     </div>
 
     <div id="loading">SYAI IS PROCESSING...</div>
@@ -55,6 +88,21 @@
     </div>
 
     <script>
+        // Load saved theme on startup
+        const savedTheme = localStorage.getItem('syai-theme') || '#00ff88';
+        document.documentElement.style.setProperty('--primary-color', savedTheme);
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setTheme(color) {
+            document.documentElement.style.setProperty('--primary-color', color);
+            localStorage.setItem('syai-theme', color);
+            toggleSettings();
+        }
+
         let isCooldown = false;
 
         async function sendMessage() {
@@ -81,9 +129,7 @@
                 const data = await response.json();
                 loader.style.display = 'none';
                 
-                if (data.errorType === "QUOTA") {
-                    startCooldown(data.cooldownTime);
-                }
+                if (data.errorType === "QUOTA") { startCooldown(data.cooldownTime); }
 
                 container.innerHTML += `<div class="msg ai-msg">${data.reply}</div>`;
                 container.scrollTop = container.scrollHeight;
@@ -98,12 +144,10 @@
             const btn = document.getElementById('send-btn');
             const input = document.getElementById('user-input');
             let time = seconds;
-
             const timer = setInterval(() => {
                 btn.disabled = true;
                 btn.innerText = `${time}S`;
                 time--;
-
                 if (time < 0) {
                     clearInterval(timer);
                     isCooldown = false;
