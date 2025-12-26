@@ -1,33 +1,34 @@
 export default async function handler(req, res) {
     const key = process.env.GEMINI_API_KEY;
-    const { message, model = "gemini-1.5-flash" } = req.body;
+    // Updated default to gemini-2.5-flash
+    const { message, model = "gemini-2.5-flash" } = req.body;
 
-    if (!key) return res.status(200).json({ reply: "API Key is missing in environment variables." });
+    if (!key) return res.status(200).json({ reply: "API Key is missing." });
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                system_instruction: { parts: [{ text: "Your name is SYAI. You are a professional coding assistant. Provide detailed code and clear explanations." }] },
+                system_instruction: { parts: [{ text: "Your name is SY AI. You are a coding expert." }] },
                 contents: [{ parts: [{ text: message }] }]
             })
         });
 
         const data = await response.json();
         
-        // FIX: Deep-access logic to find the actual text response
         let aiReply = "";
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
             aiReply = data.candidates[0].content.parts[0].text;
         } else if (data.error) {
-            aiReply = "SYAI ERROR: " + data.error.message;
+            // This will now tell you if the model ID is wrong again
+            aiReply = `SY AI Error (${data.error.code}): ${data.error.message}`;
         } else {
-            aiReply = "SYAI is processing. Please try again.";
+            aiReply = "SY AI is offline. Please check your model settings.";
         }
 
         res.status(200).json({ reply: aiReply });
     } catch (err) {
-        res.status(200).json({ reply: "SYAI Core Connection Lost." });
+        res.status(200).json({ reply: "Connection to SY AI Core lost." });
     }
 }
