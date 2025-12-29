@@ -12,7 +12,6 @@
         [data-theme="cyber"] { --primary: #ff00ff; --bg: #0b001a; --side: #1a0033; --text: #00ffff; --msg-user: #2a0066; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
         #sidebar { width: 280px; background: var(--side); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
         .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; font-weight: 900; font-size: 22px; color: var(--primary); }
         .new-chat-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
@@ -39,27 +38,20 @@
 </head>
 <body>
 
-<div id="privacy-modal">
-    <div class="privacy-box">
-        <h2 style="color:var(--primary)">Privacy Policy</h2>
-        <p>SY AI by S. Yvan uses local storage. Data is processed via Google Gemini.</p>
-        <button class="new-chat-btn" onclick="togglePrivacy(false)">Close</button>
-    </div>
-</div>
-
 <div id="sidebar">
     <div class="logo-container">SY AI PRO</div>
     <button class="new-chat-btn" onclick="createNewChat()">+ New Chat</button>
     <div id="history-list"></div>
-    <div style="margin-top:auto; font-size:11px; opacity:0.6; border-top:1px solid #333; padding-top:10px;">
-        👤 Mode: Guest | Trained by S. Yvan<br>
-        <a href="#" onclick="togglePrivacy(true)" style="color:var(--primary); text-decoration:none;">Privacy Policy</a>
+    <div style="margin-top:auto; font-size:11px; opacity:0.8; border-top:1px solid #333; padding-top:10px;">
+        <b>Owner: S. Yvan</b><br>
+        Digital & Content Creator<br>
+        <a href="https://instagram.com/sawungayvan" target="_blank" style="color:var(--primary); text-decoration:none;">@sawungayvan</a>
     </div>
 </div>
 
 <div id="main-view">
     <header>
-        <div id="quota-display" style="font-size:12px; color:var(--primary); transition: 0.3s;">
+        <div id="quota-display" style="font-size:12px; color:var(--primary);">
             API: <span id="req-count">30</span> Left
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
@@ -74,11 +66,11 @@
     </header>
 
     <div id="chat-window">
-        <div class="msg ai">I am <b>SY AI</b>, trained by <b>S. Yvan</b>. You'll hear a 'ding' when my API limits reset!</div>
+        <div class="msg ai">👋 Hello! I am <b>SY AI</b>, created by the digital creator <b>S. Yvan</b>. I can now use emojis! How can I help you today? ✨</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Message SY AI..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <input type="text" id="user-input" placeholder="Ask SY AI anything..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button class="new-chat-btn" style="margin:0; padding:10px 20px;" onclick="sendMessage()">➤</button>
     </div>
 </div>
@@ -89,46 +81,87 @@
     let currentChatId = "chat_" + Date.now(); 
     let currentHistory = [];
     let reqLimit = 30;
-
-    // --- NEW: DING SOUND AUDIO ---
     const dingSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
     function updateQuotaUI() {
         const countSpan = document.getElementById('req-count');
         const displayDiv = document.getElementById('quota-display');
         countSpan.innerText = reqLimit;
-
+        
         if (reqLimit <= 5) {
             displayDiv.style.color = "#ff4444";
-            displayDiv.style.textShadow = "0 0 8px #ff4444";
             displayDiv.style.opacity = (Math.floor(Date.now() / 500) % 2 === 0) ? "1" : "0.3";
         } else {
             displayDiv.style.color = "var(--primary)";
-            displayDiv.style.textShadow = "none";
             displayDiv.style.opacity = "1";
         }
     }
-
     setInterval(updateQuotaUI, 500);
 
     // RESET TIMER WITH DING
     setInterval(() => { 
-        reqLimit = 30; 
-        updateQuotaUI(); 
-        dingSound.play().catch(e => console.log("Sound blocked by browser until first user interaction."));
+        if (reqLimit < 30) {
+            reqLimit = 30; 
+            updateQuotaUI(); 
+            dingSound.play().catch(() => {});
+        }
     }, 60000);
 
-    // --- LOGIC ---
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const text = input.value.trim();
+        if(!text) return;
+
+        if(reqLimit <= 0) {
+            addMessage("ai", "🚫 Quota Reached. S. Yvan's AI needs a 60s break! Please wait for the 'ding'.", true);
+            return;
+        }
+
+        addMessage("user", text);
+        input.value = '';
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: text, history: currentHistory })
+            });
+            
+            const data = await res.json();
+
+            // Handle server-side busy error
+            if (data.isError && data.reply.includes("busy")) {
+                reqLimit = 0;
+            } else {
+                reqLimit--;
+            }
+            updateQuotaUI();
+
+            addMessage("ai", data.reply, data.isError);
+
+            if(!data.isError) {
+                currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply}]});
+                saveCurrentToHistory();
+            }
+        } catch (e) {
+            addMessage("ai", "📡 Connection lost. Check your internet and try again.", true);
+        }
+    }
+
+    function addMessage(role, text, isError = false) {
+        const win = document.getElementById('chat-window');
+        const style = isError ? "background:#ff4444; color:white;" : "";
+        win.innerHTML += `<div class="msg ${role}" style="${style}">${text}</div>`;
+        win.scrollTop = win.scrollHeight;
+    }
+
     function saveCurrentToHistory() {
         if (currentHistory.length > 0) {
             const firstMsg = currentHistory[0].parts[0].text;
-            const title = firstMsg.length > 25 ? firstMsg.substring(0, 25) + "..." : firstMsg;
-            const existingIndex = allChats.findIndex(c => c.id === currentChatId);
-            if (existingIndex > -1) {
-                allChats[existingIndex].messages = [...currentHistory];
-            } else {
-                allChats.push({ id: currentChatId, title: title, messages: [...currentHistory] });
-            }
+            const title = firstMsg.substring(0, 25);
+            const index = allChats.findIndex(c => c.id === currentChatId);
+            if (index > -1) allChats[index].messages = [...currentHistory];
+            else allChats.push({ id: currentChatId, title: title, messages: [...currentHistory] });
             localStorage.setItem('sy_history', JSON.stringify(allChats));
             renderHistory();
         }
@@ -138,50 +171,16 @@
         saveCurrentToHistory();
         currentChatId = "chat_" + Date.now();
         currentHistory = [];
-        document.getElementById('chat-window').innerHTML = `<div class="msg ai">New Chat Started. I am SY AI, trained by S. Yvan.</div>`;
+        document.getElementById('chat-window').innerHTML = `<div class="msg ai">✨ New Chat Started! How can SY AI assist you?</div>`;
         renderHistory();
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById('user-input');
-        const text = input.value.trim();
-        if(!text) return;
-
-        if(reqLimit <= 0) {
-            const win = document.getElementById('chat-window');
-            win.innerHTML += `<div class="msg ai" style="background:#ff4444; color:white;">Limit reached! Please wait for the ding.</div>`;
-            return;
-        }
-
-        const win = document.getElementById('chat-window');
-        win.innerHTML += `<div class="msg user">${text}</div>`;
-        input.value = '';
-        win.scrollTop = win.scrollHeight;
-
-        try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, history: currentHistory })
-            });
-            const data = await res.json();
-            reqLimit--; 
-            updateQuotaUI();
-            win.innerHTML += `<div class="msg ai" style="${data.isError ? 'background:#ff4444;color:white' : ''}">${data.reply}</div>`;
-            win.scrollTop = win.scrollHeight;
-            if(!data.isError) {
-                currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply}]});
-                saveCurrentToHistory();
-            }
-        } catch (e) { console.error(e); }
     }
 
     function renderHistory() {
         const list = document.getElementById('history-list');
         list.innerHTML = allChats.slice().reverse().map(chat => `
             <div class="history-item ${chat.id === currentChatId ? 'active-chat' : ''}" onclick="loadChat('${chat.id}')">
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px;">${chat.title}</span>
-                <span onclick="deleteChat('${chat.id}', event)" style="color:#ff4444; font-weight:bold;">×</span>
+                <span>💬 ${chat.title}</span>
+                <span onclick="deleteChat('${chat.id}', event)" style="color:#ff4444;">×</span>
             </div>
         `).join('');
     }
@@ -207,17 +206,10 @@
 
     function downloadPDF() {
         const doc = new jsPDF();
-        doc.text("SY AI Export - S. Yvan", 20, 20);
-        let y = 30;
-        currentHistory.forEach(m => {
-            const txt = doc.splitTextToSize(`${m.role.toUpperCase()}: ${m.parts[0].text}`, 170);
-            doc.text(txt, 20, y);
-            y += (txt.length * 7);
-        });
-        doc.save("SYAI_Chat.pdf");
+        doc.text("SY AI Export by S. Yvan", 20, 20);
+        currentHistory.forEach((m, i) => doc.text(`${m.role.toUpperCase()}: ${m.parts[0].text}`, 20, 30 + (i * 10)));
+        doc.save("SYAI_History.pdf");
     }
-
-    function togglePrivacy(show) { document.getElementById('privacy-modal').style.display = show ? 'block' : 'none'; }
     renderHistory();
 </script>
 </body>
