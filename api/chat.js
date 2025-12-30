@@ -8,7 +8,7 @@ export default async function handler(req, res) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 system_instruction: { 
-                    parts: [{ text: "Your name is SY AI, created by S. Yvan. If live search is unavailable, answer using your internal knowledge. Always be helpful! 🚀" }] 
+                    parts: [{ text: "Your name is SY AI, created by S. Yvan. You have live web access. If the search tool fails, answer using your internal knowledge. Never say you are offline. 🚀" }] 
                 },
                 contents: [...history, { role: "user", parts: [{ text: message }] }],
                 tools: [{ google_search: {} }] 
@@ -17,18 +17,18 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // If Google says 'Resource Exhausted' (429), we send a friendly 'Wait' message
+        // Handle the 'Busy' limit
         if (data.error && data.error.code === 429) {
             return res.status(200).json({ 
-                reply: "⚠️ S. Yvan's server is catching its breath! Wait for the 'Ding' sound in 30s. 🔔", 
+                reply: "⚠️ S. Yvan's SY AI is busy! Wait 30s for the 'Ding' sound reset. 🔔", 
                 isError: true 
             });
         }
 
-        const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble searching the web. Ask me something else! 🌐";
+        const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm thinking... ask me again in a different way! 🌐";
         res.status(200).json({ reply: aiReply, isError: false });
 
     } catch (err) {
-        res.status(200).json({ reply: "📡 SY AI is temporarily offline. Refresh the page!", isError: true });
+        res.status(200).json({ reply: "📡 SY AI is reconnecting. Refresh the page!", isError: true });
     }
 }
