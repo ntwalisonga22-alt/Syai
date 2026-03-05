@@ -6,26 +6,39 @@
     <title>SY AI PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* ORIGINAL THEMES PRESERVED */
+        /* THEMES - DESIGN PRESERVED */
         [data-theme="dark"] { --primary: #00ff88; --bg: #0a0a0a; --side: #111; --text: #fff; --msg-user: #222; }
         [data-theme="light"] { --primary: #0077ff; --bg: #f5f5f5; --side: #e0e0e0; --text: #000; --msg-user: #ddd; }
         [data-theme="cyber"] { --primary: #ff00ff; --bg: #0b001a; --side: #1a0033; --text: #00ffff; --msg-user: #2a0066; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        #sidebar { width: 280px; background: var(--side); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1001; }
+        
+        /* SIMPLE AUTH OVERLAY */
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .auth-box { background: #111; border: 2px solid var(--primary); padding: 40px; border-radius: 15px; text-align: center; max-width: 350px; box-shadow: 0 0 20px var(--primary); }
+
+        #sidebar { width: 280px; background: var(--side); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; transition: 0.3s; }
         .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; font-weight: 900; font-size: 22px; color: var(--primary); }
         .new-chat-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
-        #main-view { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; }
+        
+        #history-list { flex: 1; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); }
+
+        #main-view { flex: 1; display: flex; flex-direction: column; position: relative; }
         header { padding: 15px 25px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        
         #chat-window { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .msg { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.5; word-wrap: break-word; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .msg { max-width: 80%; padding: 15px; border-radius: 12px; line-height: 1.5; }
         .user { background: var(--msg-user); align-self: flex-end; }
         .ai { background: #fff; color: #000; align-self: flex-start; border-left: 5px solid var(--primary); }
+        
         .input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--side); }
         input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; outline: none; }
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .auth-box { background: #111; border: 2px solid var(--primary); padding: 40px; border-radius: 15px; text-align: center; width: 320px; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: absolute; left: -280px; z-index: 1000; height: 100%; }
+            #sidebar.open { left: 0; }
+        }
     </style>
 </head>
 <body>
@@ -33,9 +46,12 @@
 <div id="auth-overlay">
     <div class="auth-box">
         <h1 style="color:var(--primary); margin:0;">SY AI PRO</h1>
-        <p style="font-size:11px; opacity:0.6; margin-bottom:20px;">Developed by S. Yvan</p>
-        <input type="text" id="username-input" placeholder="Enter Your Nickname">
-        <button class="new-chat-btn" style="width:100%" onclick="login()">Access SY AI</button>
+        <p style="font-size:12px; opacity:0.7;">Developed by S. Yvan</p>
+        <div id="login-form">
+            <input type="text" id="username-input" placeholder="Enter Nickname" style="width:90%; margin-bottom:10px; background:#222;"><br>
+            <button class="new-chat-btn" style="width:100%" onclick="simpleLogin()">Access All Features</button>
+            <button onclick="skipToGuest()" style="background:transparent; color:white; border:none; cursor:pointer; margin-top:15px; font-size:12px; text-decoration:underline;">Skip (10 Chats Max)</button>
+        </div>
     </div>
 </div>
 
@@ -45,92 +61,111 @@
     <div id="history-list"></div>
     <div style="margin-top:auto; font-size:11px; opacity:0.8; border-top:1px solid #333; padding-top:10px;">
         <b>Owner: S. Yvan</b><br>
+        <span id="user-display">Guest User</span><br>
         <a href="https://instagram.com/sawungayvan" target="_blank" style="color:var(--primary); text-decoration:none;">@sawungayvan</a>
     </div>
 </div>
 
 <div id="main-view">
     <header>
-        <div style="font-weight:bold; color:var(--primary); font-size:14px;">SY AI ASSISTANT</div>
-        <div style="font-size:12px; color:var(--primary);">API: <span id="req-count">30</span> Left</div>
-        <select onchange="document.documentElement.setAttribute('data-theme', this.value)" style="background:#222; color:#fff; border:1px solid #444; font-size:10px;">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="cyber">Cyber</option>
-        </select>
+        <div style="font-size:12px; color:var(--primary);">
+            Searches: <span id="search-count">0</span> / 10
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button id="pdf-btn" onclick="downloadPDF()" style="display:none; background:transparent; color:white; border:1px solid #444; padding:5px; border-radius:5px; font-size:10px;">📥 PDF</button>
+            <select id="theme-select" onchange="changeTheme(this.value)" style="background:#222; color:#fff; border:1px solid #444; font-size:10px;">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option id="cyber-opt" value="cyber" disabled>Cyber (Locked 🔒)</option>
+            </select>
+        </div>
     </header>
 
     <div id="chat-window">
-        <div class="msg ai">Hello! I am <b>SY AI</b>, created by <b>S. Yvan</b>. How can I help with your schoolwork today? ✨</div>
+        <div class="msg ai">👋 Hello! I am <b>SY AI</b>. Log in to unlock the <b>Cyber Theme</b> and <b>PDF Downloads</b>! ✨</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ask SY AI anything..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <input type="text" id="user-input" placeholder="Message SY AI..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button class="new-chat-btn" style="margin:0; padding:10px 15px;" onclick="sendMessage()">➤</button>
     </div>
 </div>
 
 <script>
-    let reqLimit = 30;
-    let currentHistory = [];
-    const dingSound = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
+    let isLoggedIn = false;
+    let searchesUsed = 0;
 
-    function login() {
-        if(document.getElementById('username-input').value) {
-            document.getElementById('auth-overlay').style.display = 'none';
-        }
+    // --- SIMPLE AUTH LOGIC ---
+    function simpleLogin() {
+        const name = document.getElementById('username-input').value.trim();
+        if (name.length < 2) { alert("Please enter a nickname!"); return; }
+        
+        isLoggedIn = true;
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('user-display').innerText = "Member: " + name;
+        document.getElementById('pdf-btn').style.display = 'block';
+        document.getElementById('cyber-opt').disabled = false;
+        document.getElementById('cyber-opt').innerText = "Cyber";
+        document.getElementById('search-count').parentElement.innerHTML = "Unlimited Access ✨";
     }
 
-    // Reset API every minute
-    setInterval(() => {
-        if (reqLimit < 30) {
-            reqLimit = 30;
-            document.getElementById('req-count').innerText = reqLimit;
-            dingSound.play().catch(() => {});
-        }
-    }, 60000);
+    function skipToGuest() {
+        document.getElementById('auth-overlay').style.display = 'none';
+        isLoggedIn = false;
+    }
 
+    function changeTheme(val) {
+        if (val === 'cyber' && !isLoggedIn) {
+            alert("S. Yvan says: Log in to use Cyber mode! 🔒");
+            document.getElementById('theme-select').value = 'dark';
+            return;
+        }
+        document.documentElement.setAttribute('data-theme', val);
+    }
+
+    // --- CHAT LOGIC ---
     async function sendMessage() {
         const input = document.getElementById('user-input');
         const text = input.value.trim();
-        if(!text || reqLimit <= 0) return;
+        if(!text) return;
+
+        if (!isLoggedIn) {
+            searchesUsed++;
+            document.getElementById('search-count').innerText = searchesUsed;
+            if (searchesUsed > 10) {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                return;
+            }
+        }
 
         addMessage("user", text);
         input.value = '';
-        const loadingId = addMessage("ai", "<i>SY AI is thinking...</i>");
 
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, history: currentHistory })
+                body: JSON.stringify({ message: text })
             });
             const data = await res.json();
-            document.getElementById(loadingId).remove();
-
-            if (!data.isError) {
-                reqLimit--;
-                document.getElementById('req-count').innerText = reqLimit;
-                addMessage("ai", data.reply);
-                currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply}]});
-            } else {
-                addMessage("ai", data.reply);
-            }
-        } catch (e) {
-            document.getElementById(loadingId).innerHTML = "📡 Connection busy.";
-        }
+            addMessage("ai", data.reply);
+        } catch (e) { addMessage("ai", "Error connecting... 📡"); }
     }
 
     function addMessage(role, text) {
-        const id = 'msg-' + Date.now();
         const win = document.getElementById('chat-window');
-        win.innerHTML += `<div id="${id}" class="msg ${role}">${text}</div>`;
+        win.innerHTML += `<div class="msg ${role}">${text}</div>`;
         win.scrollTop = win.scrollHeight;
-        return id;
+    }
+
+    function downloadPDF() {
+        if (!isLoggedIn) return;
+        const doc = new jsPDF();
+        doc.text("SY AI Export - S. Yvan", 20, 20);
+        doc.save("SYAI.pdf");
     }
 
     function createNewChat() {
-        currentHistory = [];
         document.getElementById('chat-window').innerHTML = `<div class="msg ai">New Chat Started! ✨</div>`;
     }
 </script>
