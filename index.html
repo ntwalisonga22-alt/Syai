@@ -4,104 +4,653 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SY AI PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* MODERN CHATGPT THEMES */
-        [data-theme="dark"] { --primary: #10a37f; --bg: #212121; --side: #171717; --text: #ececec; --msg-user: #2f2f2f; --msg-ai: transparent; --border: #333; }
-        [data-theme="light"] { --primary: #10a37f; --bg: #ffffff; --side: #f9f9f9; --text: #000; --msg-user: #f4f4f4; --msg-ai: transparent; --border: #e5e5e5; }
-        [data-theme="cyber"] { --primary: #ff00ff; --bg: #0b001a; --side: #1a0033; --text: #00ffff; --msg-user: #2a0066; --msg-ai: transparent; --border: #ff00ff; }
+        :root {
+            --radius: 24px;
+            --transition: 0.2s ease;
+        }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; margin: 0; display: flex; height: 100vh; }
+        [data-theme="dark"] {
+            --bg: #1e1f20;
+            --side: #131314;
+            --surface: #282a2c;
+            --surface2: #303134;
+            --text: #e3e3e3;
+            --text-muted: #9aa0a6;
+            --border: #3c4043;
+            --primary: #8ab4f8;
+            --primary-glow: rgba(138,180,248,0.15);
+            --user-bubble: #303134;
+            --gem1: #4285f4;
+            --gem2: #ea4335;
+            --gem3: #fbbc05;
+            --gem4: #34a853;
+        }
+        [data-theme="light"] {
+            --bg: #f8f9fa;
+            --side: #ffffff;
+            --surface: #ffffff;
+            --surface2: #f1f3f4;
+            --text: #202124;
+            --text-muted: #5f6368;
+            --border: #e0e0e0;
+            --primary: #1a73e8;
+            --primary-glow: rgba(26,115,232,0.1);
+            --user-bubble: #e8f0fe;
+            --gem1: #4285f4;
+            --gem2: #ea4335;
+            --gem3: #fbbc05;
+            --gem4: #34a853;
+        }
+        [data-theme="cyber"] {
+            --bg: #0d0d1a;
+            --side: #080810;
+            --surface: #12122a;
+            --surface2: #1a1a35;
+            --text: #e0e0ff;
+            --text-muted: #7070aa;
+            --border: #2a2a5a;
+            --primary: #bb86fc;
+            --primary-glow: rgba(187,134,252,0.15);
+            --user-bubble: #1a1a35;
+            --gem1: #bb86fc;
+            --gem2: #cf6679;
+            --gem3: #ffb74d;
+            --gem4: #80cbc4;
+        }
 
-        /* Sidebar - Slim & Modern */
-        #sidebar { width: 260px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; transition: 0.3s; }
-        .logo-container { font-weight: 700; font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--primary); }
-        .new-chat-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; text-align: left; margin-bottom: 20px; }
-        .new-chat-btn:hover { background: rgba(255,255,255,0.05); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        #main-view { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
-        
-        /* Chat Container - Centered Content */
-        #chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding-bottom: 150px; }
-        .message-row { width: 100%; display: flex; justify-content: center; padding: 25px 0; }
-        .message-content { width: 85%; max-width: 750px; display: flex; gap: 20px; font-size: 16px; line-height: 1.6; }
-        
-        .avatar { width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0; }
-        .user-row { background: transparent; }
-        .user-content .text-box { background: var(--msg-user); padding: 10px 18px; border-radius: 20px; align-self: flex-end; }
-        .ai-row { background: var(--msg-ai); }
-        
-        /* Input Area - Floating Bar Style */
-        .input-container { position: absolute; bottom: 0; width: 100%; display: flex; justify-content: center; padding: 20px; background: linear-gradient(transparent, var(--bg) 50%); }
-        .input-box { width: 85%; max-width: 750px; background: var(--side); border: 1px solid var(--border); border-radius: 15px; display: flex; align-items: center; padding: 10px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        input { flex: 1; background: transparent; border: none; color: var(--text); padding: 10px; outline: none; font-size: 16px; }
-        .send-btn { background: var(--primary); color: white; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Google Sans Text', 'Google Sans', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-        /* Login Screen */
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-box { text-align: center; width: 300px; }
-        .auth-box h1 { font-size: 24px; margin-bottom: 20px; }
-        .auth-input { width: 100%; padding: 12px; background: var(--side); border: 1px solid var(--border); color: var(--text); border-radius: 8px; margin-bottom: 15px; outline: none; }
+        /* ── SIDEBAR ── */
+        #sidebar {
+            width: 72px;
+            background: var(--side);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            gap: 8px;
+            transition: width 0.25s ease;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+        #sidebar:hover {
+            width: 240px;
+        }
+        .sidebar-logo {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            gap: 14px;
+            min-height: 44px;
+            cursor: default;
+        }
+        .gem-icon {
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+        .gem-icon svg { width: 28px; height: 28px; }
+        .sidebar-logo-text {
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--text);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #sidebar:hover .sidebar-logo-text { opacity: 1; }
 
-        /* Header Info */
-        .header-info { position: absolute; top: 15px; right: 25px; display: flex; gap: 15px; align-items: center; font-size: 12px; z-index: 10; }
-        
-        @media (max-width: 768px) { #sidebar { display: none; } .message-content { width: 92%; } }
+        .sidebar-divider { width: 70%; height: 1px; background: var(--border); margin: 4px 0; }
+
+        .sidebar-btn {
+            width: calc(100% - 16px);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 16px;
+            border-radius: 30px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: 'Google Sans Text', sans-serif;
+            font-size: 14px;
+            transition: background var(--transition), color var(--transition);
+            min-height: 44px;
+        }
+        .sidebar-btn:hover { background: var(--surface2); color: var(--text); }
+        .sidebar-btn.active { background: var(--primary-glow); color: var(--primary); }
+        .sidebar-btn svg { flex-shrink: 0; width: 20px; height: 20px; }
+        .sidebar-btn span {
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #sidebar:hover .sidebar-btn span { opacity: 1; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .api-badge {
+            background: var(--surface2);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .theme-select {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 6px;
+            font-size: 11px;
+            cursor: pointer;
+            width: 40px;
+            transition: width 0.25s ease;
+        }
+        #sidebar:hover .theme-select { width: 120px; }
+
+        /* ── MAIN ── */
+        #main-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            gap: 10px;
+        }
+        .topbar-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .topbar-chevron {
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        /* ── CHAT WINDOW ── */
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 160px;
+            scroll-behavior: smooth;
+        }
+        #chat-window::-webkit-scrollbar { width: 6px; }
+        #chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* ── WELCOME SCREEN ── */
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px 24px;
+            min-height: 400px;
+        }
+        .welcome-greeting {
+            font-family: 'Google Sans', sans-serif;
+            font-size: clamp(28px, 5vw, 44px);
+            font-weight: 500;
+            background: linear-gradient(135deg, var(--gem1), var(--gem2), var(--gem3), var(--gem4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .welcome-sub {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            font-family: 'Google Sans', sans-serif;
+            text-align: center;
+        }
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 680px;
+        }
+        .suggestion-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition), transform 0.15s ease;
+            text-align: left;
+        }
+        .suggestion-card:hover {
+            background: var(--surface2);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .suggestion-card .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .suggestion-card .card-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .card-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* ── MESSAGES ── */
+        .message-row {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 8px 0;
+            animation: fadeUp 0.25s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-content {
+            width: 90%;
+            max-width: 720px;
+            display: flex;
+            gap: 16px;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .ai-avatar {
+            background: linear-gradient(135deg, var(--gem1), var(--gem2), var(--gem3), var(--gem4));
+            color: white;
+            font-family: 'Google Sans', sans-serif;
+        }
+        .user-avatar {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .user-row .message-content { flex-direction: row-reverse; }
+        .user-row .text-box {
+            background: var(--user-bubble);
+            padding: 10px 18px;
+            border-radius: 20px 20px 4px 20px;
+            max-width: 80%;
+        }
+        .ai-row .text-box { padding: 4px 0; }
+
+        /* ── INPUT AREA ── */
+        .input-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 24px 20px;
+            background: linear-gradient(transparent, var(--bg) 35%);
+        }
+        .input-box {
+            width: 100%;
+            max-width: 720px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            display: flex;
+            align-items: flex-end;
+            padding: 12px 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .input-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15), 0 0 0 2px var(--primary-glow);
+        }
+        #user-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            padding: 4px 8px;
+            outline: none;
+            font-size: 15px;
+            font-family: 'Google Sans Text', sans-serif;
+            resize: none;
+            min-height: 24px;
+            max-height: 120px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        #user-input::placeholder { color: var(--text-muted); }
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .send-btn {
+            background: var(--primary);
+            color: var(--side);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity var(--transition), transform 0.15s ease;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .input-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* ── LOADING DOTS ── */
+        .loading-dots span {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: dot-bounce 1.2s infinite ease-in-out;
+        }
+        .loading-dots span:nth-child(1) { background: var(--gem1); animation-delay: 0s; }
+        .loading-dots span:nth-child(2) { background: var(--gem2); animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { background: var(--gem3); animation-delay: 0.4s; }
+        .loading-dots span:nth-child(4) { background: var(--gem4); animation-delay: 0.6s; }
+        @keyframes dot-bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ── AUTH OVERLAY ── */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-box {
+            text-align: center;
+            width: 340px;
+            padding: 20px;
+        }
+        .auth-gem {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+        }
+        .auth-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 500;
+            background: linear-gradient(135deg, var(--gem1), var(--gem2), var(--gem3), var(--gem4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 28px;
+            margin-bottom: 14px;
+            outline: none;
+            font-size: 15px;
+            font-family: 'Google Sans Text', sans-serif;
+            transition: border-color var(--transition);
+        }
+        .auth-input:focus { border-color: var(--primary); }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: var(--side);
+            border: none;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: 'Google Sans', sans-serif;
+            cursor: pointer;
+            transition: opacity var(--transition);
+        }
+        .auth-btn:hover { opacity: 0.88; }
+        .auth-footer {
+            font-size: 11px;
+            margin-top: 20px;
+            color: var(--text-muted);
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            .suggestion-grid { grid-template-columns: 1fr 1fr; }
+            .message-content { width: 94%; }
+        }
+        @media (max-width: 480px) {
+            .suggestion-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
+<!-- AUTH OVERLAY -->
 <div id="auth-overlay">
     <div class="auth-box">
-        <h1>SY AI PRO</h1>
-        <input type="text" id="username-input" class="auth-input" placeholder="Your name">
-        <button class="new-chat-btn" style="width:100%; text-align:center; background:var(--primary); color:white; border:none;" onclick="login()">Get Started</button>
-        <p style="font-size:10px; margin-top:15px; opacity:0.5;">By S. Yvan</p>
+        <div class="auth-gem">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 4 L32 28 L8 32 Z" fill="#4285f4"/>
+                <path d="M32 4 L32 28 L56 32 Z" fill="#ea4335"/>
+                <path d="M32 60 L32 36 L8 32 Z" fill="#34a853"/>
+                <path d="M32 60 L32 36 L56 32 Z" fill="#fbbc05"/>
+            </svg>
+        </div>
+        <h1 class="auth-title">SY AI PRO</h1>
+        <p class="auth-subtitle">Your personal AI assistant</p>
+        <input type="text" id="username-input" class="auth-input" placeholder="What's your name?" onkeypress="if(event.key==='Enter') login()">
+        <button class="auth-btn" onclick="login()">Get Started</button>
+        <p class="auth-footer">By S. Yvan · 2026</p>
     </div>
 </div>
 
+<!-- SIDEBAR -->
 <div id="sidebar">
-    <div class="logo-container">SY AI PRO</div>
-    <button class="new-chat-btn" onclick="createNewChat()">+ New Chat</button>
-    <div style="margin-top:auto; font-size:12px; opacity:0.7;">
-        <b>S. Yvan @ 2026</b>
+    <div class="sidebar-logo">
+        <div class="gem-icon">
+            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2 L14 13 L3 14 Z" fill="#4285f4"/>
+                <path d="M14 2 L14 13 L25 14 Z" fill="#ea4335"/>
+                <path d="M14 26 L14 15 L3 14 Z" fill="#34a853"/>
+                <path d="M14 26 L14 15 L25 14 Z" fill="#fbbc05"/>
+            </svg>
+        </div>
+        <span class="sidebar-logo-text">SY AI PRO</span>
     </div>
-</div>
 
-<div id="main-view">
-    <div class="header-info">
-        <span>API: <span id="req-count">30</span></span>
-        <select onchange="document.documentElement.setAttribute('data-theme', this.value)" style="background:transparent; color:var(--text); border:1px solid var(--border); border-radius:5px; padding:2px;">
+    <div class="sidebar-divider"></div>
+
+    <button class="sidebar-btn active" onclick="createNewChat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+        </svg>
+        <span>New Chat</span>
+    </button>
+
+    <button class="sidebar-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/>
+        </svg>
+        <span>Search</span>
+    </button>
+
+    <button class="sidebar-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Recent</span>
+    </button>
+
+    <div class="sidebar-footer">
+        <div class="api-badge">⚡ <span id="req-count">30</span> left</div>
+        <select class="theme-select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
             <option value="dark">Dark</option>
             <option value="light">Light</option>
             <option value="cyber">Cyber</option>
         </select>
     </div>
+</div>
+
+<!-- MAIN VIEW -->
+<div id="main-view">
+    <div class="topbar">
+        <span class="topbar-title">SY AI PRO</span>
+        <svg class="topbar-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
 
     <div id="chat-window">
-        <div class="message-row ai-row">
-            <div class="message-content">
-                <div class="avatar" style="background:var(--primary); color:white;">SY</div>
-                <div>Hello! I'm <b>SY AI</b>, your personal assistant created by <b>S. Yvan</b>. How can I help you today?</div>
+        <!-- Welcome screen shown initially -->
+        <div id="welcome-screen">
+            <h1 class="welcome-greeting" id="greeting-text">Hello, there</h1>
+            <p class="welcome-sub">How can I help you today?</p>
+            <div class="suggestion-grid">
+                <div class="suggestion-card" onclick="useSuggestion('Summarize a topic for me clearly')">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">Summarize a topic</div>
+                    <div class="card-sub">Get a clear, concise overview of any subject</div>
+                </div>
+                <div class="suggestion-card" onclick="useSuggestion('Help me write something creative')">
+                    <div class="card-icon">✍️</div>
+                    <div class="card-title">Help me write</div>
+                    <div class="card-sub">Essays, emails, stories and more</div>
+                </div>
+                <div class="suggestion-card" onclick="useSuggestion('Explain a concept step by step')">
+                    <div class="card-icon">💡</div>
+                    <div class="card-title">Explain a concept</div>
+                    <div class="card-sub">Break down complex ideas simply</div>
+                </div>
+                <div class="suggestion-card" onclick="useSuggestion('Give me ideas for a project')">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Brainstorm ideas</div>
+                    <div class="card-sub">Get creative suggestions and inspiration</div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="input-container">
         <div class="input-box">
-            <input type="text" id="user-input" placeholder="Message SY AI..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">↑</button>
+            <textarea id="user-input" placeholder="Ask SY AI anything..." rows="1"
+                oninput="autoResize(this)"
+                onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}"></textarea>
+            <div class="input-actions">
+                <button class="send-btn" onclick="sendMessage()" id="send-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4l8 8H4l8-8z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
+        <span class="input-hint">SY AI can make mistakes. Double-check important info.</span>
     </div>
 </div>
 
 <script>
     let reqLimit = 30;
     let currentHistory = [];
+    let userName = 'there';
+    let chatStarted = false;
+
     const dingSound = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
 
     function login() {
-        const val = document.getElementById('username-input').value;
-        if(val) document.getElementById('auth-overlay').style.display = 'none';
+        const val = document.getElementById('username-input').value.trim();
+        if (!val) return;
+        userName = val;
+        document.getElementById('greeting-text').textContent = `Hello, ${val}`;
+        document.getElementById('auth-overlay').style.display = 'none';
+    }
+
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function useSuggestion(text) {
+        document.getElementById('user-input').value = text;
+        sendMessage();
+    }
+
+    function hideWelcome() {
+        if (!chatStarted) {
+            const ws = document.getElementById('welcome-screen');
+            if (ws) ws.style.display = 'none';
+            chatStarted = true;
+        }
     }
 
     setInterval(() => {
@@ -115,58 +664,111 @@
     async function sendMessage() {
         const input = document.getElementById('user-input');
         const text = input.value.trim();
-        if(!text || reqLimit <= 0) return;
+        if (!text || reqLimit <= 0) return;
 
-        addMessage("user", text);
+        hideWelcome();
+        addMessage('user', text);
         input.value = '';
-        const loadingId = addMessage("ai", "...");
+        input.style.height = 'auto';
+
+        const loadingId = addLoading();
+        const btn = document.getElementById('send-btn');
+        btn.disabled = true;
 
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text, history: currentHistory })
             });
             const data = await res.json();
             document.getElementById(loadingId).remove();
+            btn.disabled = false;
 
             if (!data.isError) {
                 reqLimit--;
                 document.getElementById('req-count').innerText = reqLimit;
-                addMessage("ai", data.reply);
-                currentHistory.push({role:"user", parts:[{text:text}]}, {role:"model", parts:[{text:data.reply}]});
+                addMessage('ai', data.reply);
+                currentHistory.push(
+                    { role: 'user', parts: [{ text }] },
+                    { role: 'model', parts: [{ text: data.reply }] }
+                );
             } else {
-                addMessage("ai", data.reply);
+                addMessage('ai', data.reply);
             }
         } catch (e) {
-            document.getElementById(loadingId).innerText = "Connection busy.";
+            document.getElementById(loadingId).remove();
+            btn.disabled = false;
+            addMessage('ai', 'Connection error. Please try again. 📡');
         }
+    }
+
+    function addLoading() {
+        const id = 'msg-' + Date.now();
+        const win = document.getElementById('chat-window');
+        const div = document.createElement('div');
+        div.id = id;
+        div.className = 'message-row ai-row';
+        div.innerHTML = `
+            <div class="message-content">
+                <div class="avatar ai-avatar">SY</div>
+                <div class="text-box" style="padding-top:10px;">
+                    <div class="loading-dots">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>`;
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
+        return id;
     }
 
     function addMessage(role, text) {
         const id = 'msg-' + Date.now();
         const win = document.getElementById('chat-window');
         const isAi = role === 'ai';
-        
-        win.innerHTML += `
-            <div id="${id}" class="message-row ${role}-row">
-                <div class="message-content">
-                    <div class="avatar" style="background:${isAi ? 'var(--primary)' : '#5436da'}; color:white;">${isAi ? 'SY' : 'U'}</div>
-                    <div class="text-box">${text}</div>
-                </div>
+        const div = document.createElement('div');
+        div.id = id;
+        div.className = `message-row ${role}-row`;
+        div.innerHTML = `
+            <div class="message-content">
+                <div class="avatar ${isAi ? 'ai-avatar' : 'user-avatar'}">${isAi ? 'SY' : userName.charAt(0).toUpperCase()}</div>
+                <div class="text-box">${text.replace(/\n/g, '<br>')}</div>
             </div>`;
-        
+        win.appendChild(div);
         win.scrollTop = win.scrollHeight;
         return id;
     }
 
     function createNewChat() {
         currentHistory = [];
-        document.getElementById('chat-window').innerHTML = `
-            <div class="message-row ai-row">
-                <div class="message-content">
-                    <div class="avatar" style="background:var(--primary); color:white;">SY</div>
-                    <div>New session started. How can I help?</div>
+        chatStarted = false;
+        const win = document.getElementById('chat-window');
+        win.innerHTML = `
+            <div id="welcome-screen">
+                <h1 class="welcome-greeting" id="greeting-text">Hello, ${userName}</h1>
+                <p class="welcome-sub">How can I help you today?</p>
+                <div class="suggestion-grid">
+                    <div class="suggestion-card" onclick="useSuggestion('Summarize a topic for me clearly')">
+                        <div class="card-icon">📚</div>
+                        <div class="card-title">Summarize a topic</div>
+                        <div class="card-sub">Get a clear, concise overview of any subject</div>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion('Help me write something creative')">
+                        <div class="card-icon">✍️</div>
+                        <div class="card-title">Help me write</div>
+                        <div class="card-sub">Essays, emails, stories and more</div>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion('Explain a concept step by step')">
+                        <div class="card-icon">💡</div>
+                        <div class="card-title">Explain a concept</div>
+                        <div class="card-sub">Break down complex ideas simply</div>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion('Give me ideas for a project')">
+                        <div class="card-icon">🚀</div>
+                        <div class="card-title">Brainstorm ideas</div>
+                        <div class="card-sub">Get creative suggestions and inspiration</div>
+                    </div>
                 </div>
             </div>`;
     }
