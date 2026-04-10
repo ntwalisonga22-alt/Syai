@@ -6,14 +6,17 @@ export default async function handler(req, res) {
     if (generateImage) {
         try {
             const prompt = message;
+            // Updated to gemini-3.1-flash-image-preview (Nano Banana 2) for 2026
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${key}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
-                        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+                        generationConfig: { 
+                            responseModalities: ['TEXT', 'IMAGE'] 
+                        }
                     })
                 }
             );
@@ -34,7 +37,7 @@ export default async function handler(req, res) {
                     isError: false
                 });
             } else {
-                return res.status(200).json({ reply: textPart?.text || "Couldn't generate image. Try a different prompt.", isError: false });
+                return res.status(200).json({ reply: textPart?.text || "Couldn't generate image. Try a different prompt. 🎨", isError: false });
             }
         } catch (err) {
             return res.status(200).json({ reply: 'Image generation failed. 📡', isError: true });
@@ -43,22 +46,19 @@ export default async function handler(req, res) {
 
     // ── CHAT (text / image / file) ──
     try {
-        // build the user message parts
         const userParts = [];
 
-        // attach image if provided
         if (imageData && imageMimeType) {
             userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
         }
 
-        // attach file (PDF, etc.) if provided
         if (fileData && fileMimeType) {
             userParts.push({ inlineData: { mimeType: fileMimeType, data: fileData } });
         }
 
-        // text message
         if (message) userParts.push({ text: message });
 
+        // Updated to gemini-2.5-flash-lite (Current stable ultra-fast model)
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
             {
