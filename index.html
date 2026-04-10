@@ -384,7 +384,7 @@
 <script>
 var reqLimit=30,currentHistory=[],userName='there',chatStarted=false,currentChatId=null;
 var attachedImageB64=null,attachedImageMime=null,attachedFileB64=null,attachedFileMime=null,attachedFileName=null,imageGenMode=false;
-var recognition=null,isRecording=false,isSpeaking=false,speechSynth=window.speechSynthesis;
+var recognition=null,isRecording=false,isSpeaking=false,speechSynth=window.speechSynthesis,lastInputWasVoice=false;
 var LS_NAME='syai_username',LS_CHATS='syai_chats',LS_THEME='syai_theme';
 var dingSound=new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
 
@@ -485,7 +485,7 @@ function startRecording(){
     recognition.onend=function(){
         isRecording=false;document.getElementById('voice-btn').classList.remove('recording');document.getElementById('mobile-voice-btn').classList.remove('active');hideVoiceToast();
         var text=document.getElementById('user-input').value.trim()||document.getElementById('mobile-user-input').value.trim();
-        if(text)sendMessage(window.innerWidth<=768?'mobile':'desktop');
+        if(text){lastInputWasVoice=true;sendMessage(window.innerWidth<=768?'mobile':'desktop');}
     };
     recognition.onerror=function(e){isRecording=false;hideVoiceToast();if(e.error!=='no-speech')showVoiceToast('Error: '+e.error,2000);};
     recognition.start();
@@ -582,6 +582,7 @@ async function sendMessage(source){
     var input=document.getElementById(inputId);var text=input.value.trim();
     if(!text&&!attachedImageB64&&!attachedFileB64)return;
     if(reqLimit<=0)return;
+    var voiceReply=lastInputWasVoice;lastInputWasVoice=false;
     if(!currentChatId)createChatLS(text||attachedFileName||'New chat');
     hideWelcome();
     var imgSrc=attachedImageB64?'data:'+attachedImageMime+';base64,'+attachedImageB64:null;
@@ -602,7 +603,11 @@ async function sendMessage(source){
         var data=await res.json();
         var el=document.getElementById(loadingId);if(el)el.remove();
         document.getElementById(btnId).disabled=false;
-        if(data.isImage){
+        if(data.isImageUrl){
+            reqLimit--;updateReqCount();
+            addGeneratedImageUrlMessage(data.imageUrl,data.caption);
+            saveMessageLS('model',data.caption||'',{isImageUrl:true,imageUrl:data.imageUrl,caption:data.caption});
+        }else if(data.isImage){
             reqLimit--;updateReqCount();
             addGeneratedImageMessage(data.imageBase64,data.imageMime,data.caption,true);
             saveMessageLS('model',data.caption||'',{isImage:true,imageB64:data.imageBase64,imageMime:data.imageMime,caption:data.caption});
@@ -611,7 +616,7 @@ async function sendMessage(source){
             addMessage('ai',data.reply);
             saveMessageLS('model',data.reply);
             currentHistory.push({role:'user',parts:[{text:text}]},{role:'model',parts:[{text:data.reply}]});
-            speakText(data.reply);
+            if(voiceReply)speakText(data.reply);
         }else{addMessage('ai',data.reply);}
     }catch(e){var el2=document.getElementById(loadingId);if(el2)el2.remove();document.getElementById(btnId).disabled=false;addMessage('ai','Connection error. Please try again. 📡');}
 }
@@ -641,6 +646,15 @@ function addGeneratedImageMessage(b64,mime,caption,addToHistory){
     div.innerHTML='<div class="message-content"><div class="avatar ai-avatar">SY</div><div class="text-box">'+(caption?'<p style="margin-bottom:8px">'+caption+'</p>':'')+'<img class="generated-img" src="'+src+'" onclick="openLightbox(\''+src+'\')" alt="Generated"><br><a class="img-download-btn" href="'+src+'" download="syai-image.png"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download</a></div></div>';
     win.insertBefore(div,spacer);win.scrollTop=win.scrollHeight;
     if(addToHistory)currentHistory.push({role:'model',parts:[{text:caption||'Generated image'}]});
+}
+
+function addGeneratedImageUrlMessage(url,caption){
+    var id='msg-'+Date.now(),win=document.getElementById('chat-window'),spacer=win.querySelector('.chat-bottom-spacer');
+    var div=document.createElement('div');div.id=id;div.className='message-row ai-row';
+    // Show loading state while image loads from Pollinations
+    div.innerHTML='<div class="message-content"><div class="avatar ai-avatar">SY</div><div class="text-box">'+(caption?'<p style="margin-bottom:8px">'+caption+'</p>':'')+'<img class="generated-img" src="'+url+'" alt="Generating image..." onload="this.style.opacity=1" onerror="this.parentElement.innerHTML+=\'<p style=color:#ea4335>Image generation failed. Try a different prompt.</p>\';this.remove();" style="opacity:0;transition:opacity 0.5s"><br><a class="img-download-btn" href="'+url+'" target="_blank" download="syai-image.png"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download</a></div></div>';
+    win.insertBefore(div,spacer);win.scrollTop=win.scrollHeight;
+    currentHistory.push({role:'model',parts:[{text:caption||'Generated image'}]});
 }
 
 function flashSaved(){var el=document.getElementById('saved-indicator');el.classList.add('show');setTimeout(function(){el.classList.remove('show');},1800);}
