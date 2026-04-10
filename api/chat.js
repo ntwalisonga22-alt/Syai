@@ -3,41 +3,43 @@ export default async function handler(req, res) {
     const hf_token = process.env.HUGGINGFACE_TOKEN; // This pulls the token you just added to Vercel
     const { message, history = [], imageData, imageMimeType, fileData, fileMimeType, generateImage } = req.body;
 
-    // ── FREE IMAGE GENERATION (Hugging Face) ──
-    if (generateImage) {
-        try {
-            // Using FLUX.1-schnell: It's free, fast, and high quality for 2026
-            const response = await fetch(
-                "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
-                {
-                    headers: { 
-                        Authorization: `Bearer ${hf_token}`,
-                        "Content-Type": "application/json"
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ inputs: message }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                return res.status(200).json({ reply: `Image Error: ${errorData.error || 'Model is loading...'}`, isError: true });
+   // ── FREE IMAGE GENERATION (Hugging Face Router) ──
+if (generateImage) {
+    try {
+        const response = await fetch(
+            "https://router.huggingface.co/hf-inference/v1/models/black-forest-labs/FLUX.1-schnell", // NEW ROUTER URL
+            {
+                headers: { 
+                    Authorization: `Bearer ${hf_token}`,
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: JSON.stringify({ inputs: message }),
             }
+        );
 
-            const blob = await response.blob();
-            const buffer = Buffer.from(await blob.arrayBuffer());
-            const base64Image = buffer.toString('base64');
-
-            return res.status(200).json({
-                isImage: true,
-                imageBase64: base64Image,
-                imageMime: "image/webp",
-                caption: `Generated for you: ${message} 🎨`,
-                isError: false
+        if (!response.ok) {
+            // Error 410 means the old URL was used; other errors show model status
+            const errorData = await response.json().catch(() => ({}));
+            return res.status(200).json({ 
+                reply: `Image Error: ${errorData.error || 'The model is currently busy. Try again in 10s!'}`, 
+                isError: true 
             });
-        } catch (err) {
-            return res.status(200).json({ reply: 'The image engine is warming up. Please try again in 10 seconds! 📡', isError: true });
         }
+
+        const blob = await response.blob();
+        const buffer = Buffer.from(await blob.arrayBuffer());
+        const base64Image = buffer.toString('base64');
+
+        return res.status(200).json({
+            isImage: true,
+            imageBase64: base64Image,
+            imageMime: "image/webp",
+            caption: `Generated for you: ${message} 🎨`,
+            isError: false
+        });
+    } catch (err) {
+        return res.status(200).json({ reply: 'SY AI image engine connection error. 📡', isError: true });
     }
 
     // ── CHAT (Gemini 2.5 Flash-Lite) ──
