@@ -3,7 +3,6 @@ export default async function handler(req, res) {
     const { message, history = [], imageData, imageMimeType, fileData, fileMimeType, generateImage } = req.body;
 
     // ── IMAGE GENERATION via Pollinations.ai ──
-    // Return the URL directly — browser loads it, no server timeout risk
     if (generateImage) {
         const prompt = encodeURIComponent(message.trim());
         const seed = Math.floor(Math.random() * 999999);
@@ -11,21 +10,16 @@ export default async function handler(req, res) {
         return res.status(200).json({
             isImageUrl: true,
             imageUrl: imgUrl,
-            caption: `Here's your image for: "${message}" 🎨`,
+            caption: `Here's your image for: "${message}"`,
             isError: false
         });
     }
 
-    // ── CHAT (text / image / file) via Gemini ──
+    // ── CHAT via Gemini ──
     try {
         const userParts = [];
-
-        if (imageData && imageMimeType) {
-            userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
-        }
-        if (fileData && fileMimeType) {
-            userParts.push({ inlineData: { mimeType: fileMimeType, data: fileData } });
-        }
+        if (imageData && imageMimeType) userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
+        if (fileData && fileMimeType)   userParts.push({ inlineData: { mimeType: fileMimeType,  data: fileData  } });
         if (message) userParts.push({ text: message });
 
         const response = await fetch(
@@ -35,7 +29,17 @@ export default async function handler(req, res) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     system_instruction: {
-                        parts: [{ text: "Your name is SY AI. You were created and trained by S. Yvan. S. Yvan is a Digital Creator and Content Creator born on December 5, 2000. His Instagram is instagram.com/sawungayvan. Always use relevant emojis in your responses to be friendly and engaging. If someone asks about your creator, share this info proudly! 🚀✨ You can analyze images, documents, and files that the user shares with you." }]
+                        parts: [{ text: `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan — a Digital Creator and Content Creator born on December 5, 2000 (Instagram: instagram.com/sawungayvan). 
+
+Your personality:
+- Clear, direct, and genuinely helpful
+- Friendly and conversational without being over the top
+- Use emojis only when they naturally add value — never force them
+- For code: always use proper markdown code blocks with the language specified (e.g. \`\`\`python)
+- For technical questions: be precise and thorough
+- For creative tasks: be expressive and original
+- For analysis (images, files, documents): be detailed and structured
+- If someone asks who made you, answer proudly about S. Yvan` }]
                     },
                     contents: [...history, { role: 'user', parts: userParts }],
                 })
@@ -46,14 +50,14 @@ export default async function handler(req, res) {
 
         if (data.error) {
             let msg = data.error.message;
-            if (data.error.code === 429) msg = "SY AI is very busy! Limit reached. Wait 30 seconds. 🚦";
+            if (data.error.code === 429) msg = "I'm handling too many requests right now. Please wait a moment and try again.";
             return res.status(200).json({ reply: msg, isError: true });
         }
 
-        const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm a bit lost, try again! 😅";
+        const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I didn't quite get that. Could you try again?";
         res.status(200).json({ reply: aiReply, isError: false });
 
     } catch (err) {
-        res.status(200).json({ reply: 'SY AI Connection Error. 📡', isError: true });
+        res.status(200).json({ reply: 'Connection error. Please check your network and try again.', isError: true });
     }
 }
