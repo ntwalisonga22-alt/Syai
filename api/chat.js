@@ -2,27 +2,18 @@ export default async function handler(req, res) {
     const key = process.env.GEMINI_API_KEY;
     const { message, history = [], imageData, imageMimeType, fileData, fileMimeType, generateImage } = req.body;
 
-    // ── IMAGE GENERATION via Pollinations.ai (free, no key needed) ──
+    // ── IMAGE GENERATION via Pollinations.ai ──
+    // Return the URL directly — browser loads it, no server timeout risk
     if (generateImage) {
-        try {
-            const prompt = encodeURIComponent(message);
-            // Pollinations returns a direct image URL — we fetch it and return as base64
-            const imgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&nologo=true&enhance=true`;
-            const imgRes = await fetch(imgUrl);
-            if (!imgRes.ok) throw new Error('Pollinations fetch failed');
-            const arrayBuffer = await imgRes.arrayBuffer();
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-            const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
-            return res.status(200).json({
-                isImage: true,
-                imageBase64: base64,
-                imageMime: mimeType,
-                caption: `Here's your image for: "${message}" 🎨`,
-                isError: false
-            });
-        } catch (err) {
-            return res.status(200).json({ reply: 'Image generation failed. Try a different prompt. 🖼️', isError: true });
-        }
+        const prompt = encodeURIComponent(message.trim());
+        const seed = Math.floor(Math.random() * 999999);
+        const imgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&nologo=true&enhance=true&seed=${seed}`;
+        return res.status(200).json({
+            isImageUrl: true,
+            imageUrl: imgUrl,
+            caption: `Here's your image for: "${message}" 🎨`,
+            isError: false
+        });
     }
 
     // ── CHAT (text / image / file) via Gemini ──
