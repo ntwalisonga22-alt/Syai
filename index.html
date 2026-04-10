@@ -163,6 +163,10 @@
         .send-btn:hover{opacity:.85;transform:scale(1.05)}
         .send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
         .input-hint{font-size:11px;color:var(--text-muted);margin-top:6px}
+        /* web search badge */
+        .web-search-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--gem4);background:rgba(52,168,83,.1);border:1px solid rgba(52,168,83,.25);border-radius:20px;padding:3px 10px;margin-bottom:8px}
+        .web-search-badge svg{width:12px;height:12px}
+
         #image-input,#file-input{display:none}
         .mobile-bottom{display:none;flex-direction:column;background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:8px 12px;padding-bottom:calc(8px + var(--safe-bottom));flex-shrink:0}
         .mobile-attach-bar{display:flex;align-items:center;gap:6px;padding-bottom:6px;overflow-x:auto}
@@ -412,7 +416,7 @@
                 </button>
             </div>
         </div>
-        <span class="input-hint">🖼 Image upload &nbsp;·&nbsp; 📄 File upload &nbsp;·&nbsp; 🎨 Generate image &nbsp;·&nbsp; 🎤 Voice I/O</span>
+        <span class="input-hint"><strong style="color:var(--text)">SY AI</strong> made by <strong style="color:var(--text)">S. Yvan</strong> &nbsp;·&nbsp; Can make mistakes &nbsp;·&nbsp; <span style="color:var(--gem4)">🌐 Live web access</span></span>
     </div>
 
     <div class="mobile-bottom">
@@ -688,6 +692,10 @@ async function sendMessage(source){
         var data=await res.json();
         var el=document.getElementById(loadingId);if(el)el.remove();
         document.getElementById(btnId).disabled=false;
+        if(data.usedSearch){
+            // prepend a web badge to the reply
+            data.reply = '%%WEBSEARCH%%' + data.reply;
+        }
         if(data.isImageUrl){
             reqLimit--;updateReqCount();
             addGeneratedImageUrlMessage(data.imageUrl,data.caption);
@@ -742,7 +750,11 @@ function addMessage(role,text,save,imageSrc,fileName){
     if(imageSrc)content+='<img class="msg-image" src="'+imageSrc+'" onclick="openLightbox(\''+imageSrc+'\')">';
     if(fileName&&!imageSrc)content+='<div class="msg-file-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>'+fileName+'</div>';
     if(text){
-        if(isAi){content+=renderMarkdown(text);}
+        if(isAi){
+            var showWebBadge=false;
+            if(text.indexOf('%%WEBSEARCH%%')===0){showWebBadge=true;text=text.substring(13);}
+            if(showWebBadge){content+='<div class="web-search-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Searched the web</div>';}
+            content+=renderMarkdown(text);}
         else{content+='<span>'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</span>';}
     }
     div.innerHTML='<div class="message-content"><div class="avatar '+(isAi?'ai-avatar':'user-avatar-msg')+'">'+(isAi?'SY':userName.charAt(0).toUpperCase())+'</div><div class="text-box">'+content+'</div></div>';
