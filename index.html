@@ -91,7 +91,7 @@
         .card-sub{font-size:11px;color:var(--text-muted)}
         .message-row{width:100%;display:flex;justify-content:center;padding:6px 0;animation:fadeUp .2s ease}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        .message-content{width:90%;max-width:720px;display:flex;gap:12px;font-size:15px;line-height:1.7}
+        .message-content{width:92%;max-width:860px;display:flex;gap:12px;font-size:15px;line-height:1.7}
         .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;margin-top:2px}
         .ai-avatar{background:linear-gradient(135deg,var(--gem1),var(--gem2),var(--gem3),var(--gem4));color:white;font-family:'Google Sans',sans-serif}
         .user-avatar-msg{background:linear-gradient(135deg,var(--gem1),var(--gem4));color:white}
@@ -127,7 +127,7 @@
         .msg-file-chip svg{width:16px;height:16px;color:var(--primary)}
         .generated-img{max-width:100%;border-radius:14px;margin-top:6px;box-shadow:0 4px 20px rgba(0,0,0,.3);cursor:pointer;display:block}
         .img-download-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--primary);cursor:pointer;text-decoration:none;background:var(--primary-glow);border-radius:20px;padding:6px 14px;border:1px solid var(--primary)}
-        .attachment-preview{display:none;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;width:100%;max-width:720px}
+        .attachment-preview{display:none;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;width:100%;max-width:860px}
         .attachment-preview.visible{display:flex}
         .attach-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0}
         .attach-file-icon{width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -147,7 +147,7 @@
         .loading-dots span:nth-child(4){background:var(--gem4);animation-delay:.6s}
         @keyframes db{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
         .input-container{position:absolute;bottom:0;width:100%;display:flex;flex-direction:column;align-items:center;padding:10px 24px 18px;background:linear-gradient(transparent,var(--bg) 30%)}
-        .input-box{width:100%;max-width:720px;background:var(--surface);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;padding:10px 14px;box-shadow:0 2px 12px rgba(0,0,0,.15);transition:border-color var(--transition),box-shadow var(--transition)}
+        .input-box{width:100%;max-width:860px;background:var(--surface);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;padding:10px 14px;box-shadow:0 2px 12px rgba(0,0,0,.15);transition:border-color var(--transition),box-shadow var(--transition)}
         .input-box:focus-within{border-color:var(--primary);box-shadow:0 2px 12px rgba(0,0,0,.15),0 0 0 2px var(--primary-glow)}
         #user-input{flex:1;background:transparent;border:none;color:var(--text);padding:2px 6px;outline:none;font-size:15px;font-family:'Google Sans Text',sans-serif;resize:none;min-height:24px;max-height:120px;overflow-y:auto;line-height:1.5;width:100%}
         #user-input::placeholder{color:var(--text-muted)}
@@ -221,6 +221,53 @@
             #welcome-screen{padding:24px 16px;min-height:unset}
         }
         @media(max-width:380px){.card-sub{display:none}.card-title{font-size:12px}}
+
+        /* ── ADMIN PANEL ── */
+        #admin-overlay{position:fixed;inset:0;background:var(--bg);z-index:8000;display:none;flex-direction:column;overflow:hidden}
+        #admin-overlay.show{display:flex}
+        .admin-topbar{display:flex;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--side)}
+        .admin-topbar-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px}
+        .admin-close-btn{margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;transition:background .15s}
+        .admin-close-btn:hover{background:var(--surface2);color:var(--text)}
+        .admin-body{flex:1;overflow-y:auto;padding:24px;max-width:960px;width:100%;margin:0 auto}
+        .admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+        .admin-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px}
+        .admin-stat-num{font-family:'Google Sans',sans-serif;font-size:28px;font-weight:700;color:var(--primary)}
+        .admin-stat-label{font-size:12px;color:var(--text-muted);margin-top:4px}
+        .admin-section-title{font-family:'Google Sans',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px}
+        .admin-table{width:100%;border-collapse:collapse;font-size:13px}
+        .admin-table th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);color:var(--text-muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+        .admin-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+        .admin-table tr:hover td{background:var(--surface2)}
+        .status-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500}
+        .status-active{background:rgba(52,168,83,.15);color:#34a853;border:1px solid rgba(52,168,83,.3)}
+        .status-inactive{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+        .status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .status-active .status-dot{background:#34a853}
+        .status-inactive .status-dot{background:var(--text-muted)}
+        .admin-empty{text-align:center;padding:48px;color:var(--text-muted);font-size:14px}
+        .admin-refresh-btn{background:var(--primary-glow);border:1px solid var(--primary);color:var(--primary);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:12px;margin-left:auto;display:block;margin-bottom:12px;transition:background .15s}
+        .admin-refresh-btn:hover{background:var(--primary);color:#fff}
+
+        /* Admin login */
+        #admin-login{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8500;display:none;align-items:center;justify-content:center}
+        #admin-login.show{display:flex}
+        .admin-login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:320px;text-align:center}
+        .admin-login-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:600;margin-bottom:6px;color:var(--text)}
+        .admin-login-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+        .admin-login-input{width:100%;padding:11px 16px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:12px;outline:none;font-size:15px;margin-bottom:12px;-webkit-appearance:none;text-align:center;letter-spacing:4px}
+        .admin-login-input:focus{border-color:var(--primary)}
+        .admin-login-btn{width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Google Sans',sans-serif}
+        .admin-login-err{font-size:12px;color:#ea4335;margin-top:8px;display:none}
+        .admin-login-cancel{font-size:12px;color:var(--text-muted);cursor:pointer;margin-top:10px;display:block}
+
+        /* Admin link in sidebar */
+        .admin-link{width:calc(100% - 8px);display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;transition:background .15s,color .15s;opacity:0.5}
+        .admin-link:hover{background:var(--surface2);color:var(--text);opacity:1}
+        .admin-link svg{width:14px;height:14px;flex-shrink:0}
+        .admin-link span{white-space:nowrap;opacity:0;transition:opacity .2s}
+        #sidebar:hover .admin-link span{opacity:1}
+
     </style>
 </head>
 <body>
@@ -286,6 +333,10 @@
         <select class="theme-select" id="desktop-theme-select" onchange="setTheme(this.value)">
             <option value="dark">Dark</option><option value="light">Light</option><option value="cyber">Cyber</option>
         </select>
+        <button class="admin-link" onclick="openAdminLogin()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Admin Only</span>
+        </button>
     </div>
 </div>
 
@@ -418,12 +469,12 @@ var dingSound=new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
 (function init(){
     var t=localStorage.getItem(LS_THEME)||'dark'; setTheme(t,false);
     var n=localStorage.getItem(LS_NAME);
-    if(n){userName=n;document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();}
+    if(n){userName=n;document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser(n);}
     setupFileInputs();
 })();
 
-function login(){var v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-input').focus();return;}userName=v;localStorage.setItem(LS_NAME,v);document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();}
-function loginSkip(){userName='Guest';document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();}
+function login(){var v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-input').focus();return;}userName=v;localStorage.setItem(LS_NAME,v);document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser(v);}
+function loginSkip(){userName='Guest';document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser('Guest');}
 function changeName(){var n=prompt('Change your name:',userName);if(n&&n.trim()){userName=n.trim();localStorage.setItem(LS_NAME,userName);updateUserUI();}}
 
 function updateUserUI(){
@@ -556,6 +607,7 @@ function saveMessageLS(role,text,extra){
 }
 
 function createChatLS(firstMessage){
+    updateUserChatCount(userName);
     var id='chat_'+Date.now();var title=firstMessage.length>42?firstMessage.substring(0,42)+'…':firstMessage;
     var chats=getAllChats();chats[id]={id:id,title:title,messages:[],updatedAt:Date.now()};
     saveAllChats(chats);currentChatId=id;renderChatLists(id);return id;
@@ -727,7 +779,183 @@ function createNewChat(){
     renderChatLists();setActiveNav('nav-home');
 }
 
+
+// ══════════════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════════════
+var ADMIN_PASS = '223456';
+var ACTIVE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+// Track user on login/skip — save to a shared registry
+function registerUser(name) {
+    var registry = getRegistry();
+    var existing = registry.find(function(u){ return u.name === name; });
+    if (existing) {
+        existing.lastSeen = Date.now();
+        existing.sessions = (existing.sessions || 0) + 1;
+    } else {
+        registry.push({
+            name: name,
+            createdAt: Date.now(),
+            lastSeen: Date.now(),
+            sessions: 1,
+            chats: 0
+        });
+    }
+    saveRegistry(registry);
+}
+
+function updateUserChatCount(name) {
+    var registry = getRegistry();
+    var user = registry.find(function(u){ return u.name === name; });
+    if (user) {
+        user.chats = Object.values(getAllChats()).length;
+        user.lastSeen = Date.now();
+        saveRegistry(registry);
+    }
+}
+
+function getRegistry() {
+    try { return JSON.parse(localStorage.getItem('syai_user_registry') || '[]'); } catch(e) { return []; }
+}
+function saveRegistry(r) { localStorage.setItem('syai_user_registry', JSON.stringify(r)); }
+
+function openAdminLogin() {
+    document.getElementById('admin-login').classList.add('show');
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-login-err').style.display = 'none';
+    setTimeout(function(){ document.getElementById('admin-pwd-input').focus(); }, 100);
+}
+
+function closeAdminLogin() {
+    document.getElementById('admin-login').classList.remove('show');
+}
+
+function adminLogin() {
+    var pwd = document.getElementById('admin-pwd-input').value;
+    if (pwd === ADMIN_PASS) {
+        closeAdminLogin();
+        openAdmin();
+    } else {
+        document.getElementById('admin-login-err').style.display = 'block';
+        document.getElementById('admin-pwd-input').value = '';
+        document.getElementById('admin-pwd-input').focus();
+    }
+}
+
+function openAdmin() {
+    document.getElementById('admin-overlay').classList.add('show');
+    loadAdminData();
+}
+
+function closeAdmin() {
+    document.getElementById('admin-overlay').classList.remove('show');
+}
+
+function loadAdminData() {
+    var registry = getRegistry();
+    var now = Date.now();
+    var activeUsers = registry.filter(function(u){ return (now - u.lastSeen) < ACTIVE_THRESHOLD; });
+    var inactiveUsers = registry.filter(function(u){ return (now - u.lastSeen) >= ACTIVE_THRESHOLD; });
+    var totalChats = registry.reduce(function(sum, u){ return sum + (u.chats || 0); }, 0);
+
+    document.getElementById('admin-total').textContent = registry.length;
+    document.getElementById('admin-active').textContent = activeUsers.length;
+    document.getElementById('admin-inactive').textContent = inactiveUsers.length;
+    document.getElementById('admin-chats').textContent = totalChats;
+
+    var wrap = document.getElementById('admin-users-wrap');
+    if (registry.length === 0) {
+        wrap.innerHTML = '<div class="admin-empty">No users have been registered yet.<br>Users appear here after logging in.</div>';
+        return;
+    }
+
+    // Sort by lastSeen desc
+    var sorted = registry.slice().sort(function(a,b){ return b.lastSeen - a.lastSeen; });
+
+    var rows = sorted.map(function(u) {
+        var isActive = (now - u.lastSeen) < ACTIVE_THRESHOLD;
+        var lastSeenStr = formatTime(u.lastSeen);
+        var createdStr = formatDate(u.createdAt);
+        var badge = isActive
+            ? '<span class="status-badge status-active"><span class="status-dot"></span>Active</span>'
+            : '<span class="status-badge status-inactive"><span class="status-dot"></span>Inactive</span>';
+        return '<tr>' +
+            '<td><strong>' + escapeHtml(u.name) + '</strong></td>' +
+            '<td>' + badge + '</td>' +
+            '<td>' + lastSeenStr + '</td>' +
+            '<td>' + createdStr + '</td>' +
+            '<td>' + (u.sessions || 1) + '</td>' +
+            '<td>' + (u.chats || 0) + '</td>' +
+            '</tr>';
+    }).join('');
+
+    wrap.innerHTML = '<table class="admin-table">' +
+        '<thead><tr>' +
+        '<th>Name</th><th>Status</th><th>Last Seen</th><th>Joined</th><th>Sessions</th><th>Chats</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+        '</table>';
+}
+
+function formatTime(ts) {
+    var now = Date.now();
+    var diff = now - ts;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return Math.floor(diff/86400000) + 'd ago';
+}
+
+function formatDate(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAdmin();closeAdminLogin();}});
 if('visualViewport' in window){window.visualViewport.addEventListener('resize',function(){var win=document.getElementById('chat-window');if(win)win.scrollTop=win.scrollHeight;});}
 </script>
+
+<!-- ADMIN LOGIN MODAL -->
+<div id="admin-login">
+    <div class="admin-login-box">
+        <div class="admin-login-title">🔐 Admin Access</div>
+        <div class="admin-login-sub">Enter admin password to continue</div>
+        <input type="password" id="admin-pwd-input" class="admin-login-input" placeholder="••••••" maxlength="10"
+            onkeypress="if(event.key==='Enter')adminLogin()">
+        <button class="admin-login-btn" onclick="adminLogin()">Access Dashboard</button>
+        <div class="admin-login-err" id="admin-login-err">Incorrect password. Try again.</div>
+        <span class="admin-login-cancel" onclick="closeAdminLogin()">Cancel</span>
+    </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-overlay">
+    <div class="admin-topbar">
+        <div class="admin-topbar-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Admin Dashboard
+        </div>
+        <button class="admin-refresh-btn" onclick="loadAdminData()">↻ Refresh</button>
+        <button class="admin-close-btn" onclick="closeAdmin()">✕ Close</button>
+    </div>
+    <div class="admin-body">
+        <div class="admin-stats">
+            <div class="admin-stat-card"><div class="admin-stat-num" id="admin-total">0</div><div class="admin-stat-label">Total Users</div></div>
+            <div class="admin-stat-card"><div class="admin-stat-num" id="admin-active">0</div><div class="admin-stat-label">Active (last 24h)</div></div>
+            <div class="admin-stat-card"><div class="admin-stat-num" id="admin-inactive">0</div><div class="admin-stat-label">Inactive</div></div>
+            <div class="admin-stat-card"><div class="admin-stat-num" id="admin-chats">0</div><div class="admin-stat-label">Total Chats Saved</div></div>
+        </div>
+        <div class="admin-section-title">User Accounts</div>
+        <div id="admin-users-wrap">
+            <div class="admin-empty">No users found yet.</div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
