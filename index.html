@@ -9,6 +9,9 @@
     <meta name="theme-color" content="#131314">
     <title>SY AI PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-theme">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
     <style>
         :root{--transition:0.2s ease;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         [data-theme="dark"]{--bg:#1e1f20;--side:#131314;--surface:#282a2c;--surface2:#303134;--text:#e3e3e3;--text-muted:#9aa0a6;--border:#3c4043;--primary:#8ab4f8;--primary-glow:rgba(138,180,248,.15);--user-bubble:#303134;--gem1:#4285f4;--gem2:#ea4335;--gem3:#fbbc05;--gem4:#34a853;--nav-bg:rgba(19,19,20,.96)}
@@ -95,6 +98,30 @@
         .user-row .message-content{flex-direction:row-reverse}
         .user-row .text-box{background:var(--user-bubble);padding:10px 16px;border-radius:20px 20px 4px 20px;max-width:80%}
         .ai-row .text-box{padding:4px 0}
+        /* MARKDOWN */
+        .ai-row .text-box p{margin:0 0 10px}.ai-row .text-box p:last-child{margin-bottom:0}
+        .ai-row .text-box ul,.ai-row .text-box ol{margin:6px 0 10px 20px;padding:0}
+        .ai-row .text-box li{margin-bottom:4px;line-height:1.6}
+        .ai-row .text-box h1,.ai-row .text-box h2,.ai-row .text-box h3{font-family:'Google Sans',sans-serif;font-weight:600;margin:14px 0 6px;color:var(--text)}
+        .ai-row .text-box h1{font-size:18px}.ai-row .text-box h2{font-size:16px}.ai-row .text-box h3{font-size:14px}
+        .ai-row .text-box strong{font-weight:600}.ai-row .text-box em{font-style:italic;color:var(--text-muted)}
+        .ai-row .text-box a{color:var(--primary);text-decoration:none}.ai-row .text-box a:hover{text-decoration:underline}
+        .ai-row .text-box blockquote{border-left:3px solid var(--primary);margin:8px 0;padding:6px 14px;background:var(--surface2);border-radius:0 8px 8px 0;color:var(--text-muted)}
+        .ai-row .text-box table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+        .ai-row .text-box th,.ai-row .text-box td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+        .ai-row .text-box th{background:var(--surface2);font-weight:600}.ai-row .text-box tr:nth-child(even){background:var(--surface)}
+        /* INLINE CODE */
+        .ai-row .text-box code:not(.hljs){background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-family:'Fira Code',monospace;font-size:13px;color:var(--primary)}
+        /* CODE BLOCKS */
+        .code-block-wrap{margin:10px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+        .code-block-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#13141e;border-bottom:1px solid #2a2b36}
+        .code-lang{font-size:11px;color:#7aa2f7;font-family:monospace;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+        .code-copy-btn{background:transparent;border:1px solid #3c4043;color:#9aa0a6;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+        .code-copy-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--primary)}
+        .code-copy-btn.copied{color:var(--gem4);border-color:var(--gem4)}
+        .code-block-wrap pre{margin:0;padding:14px 16px;overflow-x:auto;background:#1a1b26}
+        .code-block-wrap pre code{font-family:'Fira Code','Courier New',monospace;background:transparent;border:none;padding:0;font-size:13px;line-height:1.6}
+        .code-block-wrap pre::-webkit-scrollbar{height:4px}.code-block-wrap pre::-webkit-scrollbar-thumb{background:#3c4043;border-radius:2px}
         .msg-image{max-width:100%;max-height:280px;border-radius:12px;margin-bottom:6px;display:block;cursor:pointer}
         .msg-file-chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:13px;color:var(--text)}
         .msg-file-chip svg{width:16px;height:16px;color:var(--primary)}
@@ -411,6 +438,12 @@ function setTheme(val,save){
     ['desktop-theme-select','drawer-theme-select'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=val;});
     var colors={dark:'#131314',light:'#ffffff',cyber:'#080810'};
     document.querySelector('meta[name="theme-color"]').content=colors[val]||'#131314';
+    // Switch highlight.js theme for code blocks
+    var hljsLink=document.getElementById('hljs-theme');
+    if(hljsLink){
+        if(val==='light'){hljsLink.href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';}
+        else{hljsLink.href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css';}
+    }
     if(save!==false)localStorage.setItem(LS_THEME,val);
 }
 
@@ -628,13 +661,38 @@ function addLoading(){
     win.insertBefore(div,spacer);win.scrollTop=win.scrollHeight;return id;
 }
 
+function renderMarkdown(text){
+    if(typeof marked==='undefined'||typeof hljs==='undefined')return '<p>'+text.replace(/\n/g,'<br>')+'</p>';
+    var renderer=new marked.Renderer();
+    renderer.code=function(code,lang){
+        var language=lang||'plaintext';
+        var highlighted=code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        try{if(lang&&hljs.getLanguage(lang)){highlighted=hljs.highlight(code,{language:lang}).value;}else{var r=hljs.highlightAuto(code);highlighted=r.value;language=r.language||'code';}}catch(e){}
+        var safeCode=btoa(unescape(encodeURIComponent(code)));
+        return '<div class="code-block-wrap"><div class="code-block-header"><span class="code-lang">'+language+'</span><button class="code-copy-btn" onclick="copyCode(this,\'' +safeCode+ '\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button></div><pre><code class="hljs '+language+'">'+highlighted+'</code></pre></div>';
+    };
+    marked.use({renderer:renderer,breaks:true,gfm:true});
+    return marked.parse(text);
+}
+
+function copyCode(btn,b64){
+    var code=decodeURIComponent(escape(atob(b64)));
+    navigator.clipboard.writeText(code).then(function(){
+        btn.classList.add('copied');btn.textContent='✓ Copied!';
+        setTimeout(function(){btn.classList.remove('copied');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';},2000);
+    }).catch(function(){btn.textContent='Failed';});
+}
+
 function addMessage(role,text,save,imageSrc,fileName){
     var id='msg-'+Date.now(),win=document.getElementById('chat-window'),spacer=win.querySelector('.chat-bottom-spacer');
     var isAi=role==='ai';var div=document.createElement('div');div.id=id;div.className='message-row '+role+'-row';
     var content='';
     if(imageSrc)content+='<img class="msg-image" src="'+imageSrc+'" onclick="openLightbox(\''+imageSrc+'\')">';
     if(fileName&&!imageSrc)content+='<div class="msg-file-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>'+fileName+'</div>';
-    if(text)content+='<span>'+text.replace(/\n/g,'<br>')+'</span>';
+    if(text){
+        if(isAi){content+=renderMarkdown(text);}
+        else{content+='<span>'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</span>';}
+    }
     div.innerHTML='<div class="message-content"><div class="avatar '+(isAi?'ai-avatar':'user-avatar-msg')+'">'+(isAi?'SY':userName.charAt(0).toUpperCase())+'</div><div class="text-box">'+content+'</div></div>';
     win.insertBefore(div,spacer);win.scrollTop=win.scrollHeight;return id;
 }
