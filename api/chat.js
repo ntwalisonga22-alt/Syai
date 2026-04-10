@@ -1,72 +1,60 @@
 export default async function handler(req, res) {
-    const key = process.env.GEMINI_API_KEY;
+    const gemini_key = process.env.GEMINI_API_KEY;
+    const hf_token = process.env.HUGGINGFACE_TOKEN; // This pulls the token you just added to Vercel
     const { message, history = [], imageData, imageMimeType, fileData, fileMimeType, generateImage } = req.body;
 
-    // ── IMAGE GENERATION ──
+    // ── FREE IMAGE GENERATION (Hugging Face) ──
     if (generateImage) {
         try {
-            const prompt = message;
-            // Updated to gemini-3.1-flash-image-preview (Nano Banana 2) for 2026
+            // Using FLUX.1-schnell: It's free, fast, and high quality for 2026
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${key}`,
+                "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
                 {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
-                        generationConfig: { 
-                            responseModalities: ['TEXT', 'IMAGE'] 
-                        }
-                    })
+                    headers: { 
+                        Authorization: `Bearer ${hf_token}`,
+                        "Content-Type": "application/json"
+                    },
+                    method: "POST",
+                    body: JSON.stringify({ inputs: message }),
                 }
             );
-            const data = await response.json();
-            if (data.error) return res.status(200).json({ reply: `Image generation error: ${data.error.message}`, isError: true });
 
-            // find image part in response
-            const parts = data.candidates?.[0]?.content?.parts || [];
-            const imgPart = parts.find(p => p.inlineData);
-            const textPart = parts.find(p => p.text);
-
-            if (imgPart) {
-                return res.status(200).json({
-                    isImage: true,
-                    imageBase64: imgPart.inlineData.data,
-                    imageMime: imgPart.inlineData.mimeType,
-                    caption: textPart?.text || '',
-                    isError: false
-                });
-            } else {
-                return res.status(200).json({ reply: textPart?.text || "Couldn't generate image. Try a different prompt. 🎨", isError: false });
+            if (!response.ok) {
+                const errorData = await response.json();
+                return res.status(200).json({ reply: `Image Error: ${errorData.error || 'Model is loading...'}`, isError: true });
             }
+
+            const blob = await response.blob();
+            const buffer = Buffer.from(await blob.arrayBuffer());
+            const base64Image = buffer.toString('base64');
+
+            return res.status(200).json({
+                isImage: true,
+                imageBase64: base64Image,
+                imageMime: "image/webp",
+                caption: `Generated for you: ${message} 🎨`,
+                isError: false
+            });
         } catch (err) {
-            return res.status(200).json({ reply: 'Image generation failed. 📡', isError: true });
+            return res.status(200).json({ reply: 'The image engine is warming up. Please try again in 10 seconds! 📡', isError: true });
         }
     }
 
-    // ── CHAT (text / image / file) ──
+    // ── CHAT (Gemini 2.5 Flash-Lite) ──
     try {
         const userParts = [];
-
-        if (imageData && imageMimeType) {
-            userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
-        }
-
-        if (fileData && fileMimeType) {
-            userParts.push({ inlineData: { mimeType: fileMimeType, data: fileData } });
-        }
-
+        if (imageData && imageMimeType) userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
+        if (fileData && fileMimeType) userParts.push({ inlineData: { mimeType: fileMimeType, data: fileData } });
         if (message) userParts.push({ text: message });
 
-        // Updated to gemini-2.5-flash-lite (Current stable ultra-fast model)
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${gemini_key}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     system_instruction: {
-                        parts: [{ text: "Your name is SY AI. You were created and trained by S. Yvan. S. Yvan is a Digital Creator and Content Creator born on December 5, 2000. His Instagram is instagram.com/sawungayvan. Always use relevant emojis in your responses to be friendly and engaging. If someone asks about your creator, share this info proudly! 🚀✨ You can also analyze images, documents, and files that the user shares with you." }]
+                        parts: [{ text: "Your name is SY AI. You were created and trained by S. Yvan. S. Yvan is a Digital Creator and Content Creator born on December 5, 2000. His Instagram is instagram.com/sawungayvan. Always use relevant emojis in your responses to be friendly and engaging. 🚀✨ You can also analyze images and documents." }]
                     },
                     contents: [...history, { role: 'user', parts: userParts }],
                 })
@@ -74,13 +62,6 @@ export default async function handler(req, res) {
         );
 
         const data = await response.json();
-
-        if (data.error) {
-            let msg = data.error.message;
-            if (data.error.code === 429) msg = "SY AI is very busy! Limit reached. Wait 30s. 🚦";
-            return res.status(200).json({ reply: msg, isError: true });
-        }
-
         const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm a bit lost, try again! 😅";
         res.status(200).json({ reply: aiReply, isError: false });
 
