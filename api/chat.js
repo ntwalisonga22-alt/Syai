@@ -3,44 +3,57 @@ export default async function handler(req, res) {
     const hf_token = process.env.HUGGINGFACE_TOKEN;
     const { message, history = [], imageData, imageMimeType, fileData, fileMimeType, generateImage } = req.body;
 
-    // ── FREE IMAGE GENERATION (Hugging Face 2026 Router) ──
+    // ── FREE IMAGE GENERATION (With Auto-Retry) ──
     if (generateImage) {
-        try {
-            // Updated to the new 2026 Router URL
-            const response = await fetch(
-                "https://router.huggingface.co/hf-inference/v1/models/black-forest-labs/FLUX.1-schnell",
-                {
-                    headers: { 
-                        Authorization: `Bearer ${hf_token}`,
-                        "Content-Type": "application/json"
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ inputs: message }),
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+            try {
+                const response = await fetch(
+                    "https://router.huggingface.co/hf-inference/v1/models/black-forest-labs/FLUX.1-schnell",
+                    {
+                        headers: { 
+                            Authorization: `Bearer ${hf_token}`,
+                            "Content-Type": "application/json"
+                        },
+                        method: "POST",
+                        body: JSON.stringify({ inputs: message }),
+                    }
+                );
+
+                // If model is loading (503), wait and retry
+                if (response.status === 503) {
+                    attempts++;
+                    await new Promise(resolve => setTimeout(resolve, 8000)); // Wait 8 seconds
+                    continue;
                 }
-            );
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                return res.status(200).json({ 
-                    reply: `Image Error: ${errorData.error || 'The model is currently loading. Please try again in 10 seconds!'}`, 
-                    isError: true 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    return res.status(200).json({ 
+                        reply: `Image Error: ${errorData.error || 'The model is currently busy.'}`, 
+                        isError: true 
+                    });
+                }
+
+                const blob = await response.blob();
+                const buffer = Buffer.from(await blob.arrayBuffer());
+                const base64Image = buffer.toString('base64');
+
+                return res.status(200).json({
+                    isImage: true,
+                    imageBase64: base64Image,
+                    imageMime: "image/webp",
+                    caption: `Generated for you: ${message} 🎨`,
+                    isError: false
                 });
+
+            } catch (err) {
+                return res.status(200).json({ reply: 'SY AI image engine connection error. 📡', isError: true });
             }
-
-            const blob = await response.blob();
-            const buffer = Buffer.from(await blob.arrayBuffer());
-            const base64Image = buffer.toString('base64');
-
-            return res.status(200).json({
-                isImage: true,
-                imageBase64: base64Image,
-                imageMime: "image/webp",
-                caption: `Generated for you: ${message} 🎨`,
-                isError: false
-            });
-        } catch (err) {
-            return res.status(200).json({ reply: 'SY AI image engine connection error. 📡', isError: true });
         }
+        return res.status(200).json({ reply: "The engine is taking too long to wake up. Please try again in 1 minute! ⏳", isError: true });
     }
 
     // ── CHAT (Gemini 2.5 Flash-Lite) ──
@@ -57,7 +70,7 @@ export default async function handler(req, res) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     system_instruction: {
-                        parts: [{ text: "Your name is SY AI. You were created and trained by S. Yvan. S. Yvan is a Digital Creator and Content Creator born on December 5, 2000. His Instagram is instagram.com/sawungayvan. Always use relevant emojis in your responses to be friendly and engaging. 🚀✨ You can also analyze images and documents." }]
+                        parts: [{ text: "Your name is SY AI. You were created and trained by S. Yvan. S. Yvan is a Digital Creator and Content Creator born on May 12, 2000. His Instagram is instagram.com/sawungayvan. Always use relevant emojis in your responses to be friendly and engaging. 🚀✨ You can also analyze images and documents." }]
                     },
                     contents: [...history, { role: 'user', parts: userParts }],
                 })
