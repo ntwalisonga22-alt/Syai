@@ -15,7 +15,7 @@ export default async function handler(req, res) {
         });
     }
 
-    const systemPrompt = `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan — a Digital Creator and Content Creator born on December 5, 2000 (Instagram: instagram.com/sawungayvan).
+    const systemPrompt = `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan — a Digital Creator and Content Creator born on May 12, 2000 (Instagram: instagram.com/sawungayvan).
 
 Your personality:
 - Clear, direct, and genuinely helpful
