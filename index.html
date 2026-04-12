@@ -204,9 +204,15 @@
         .drawer-chat-item svg{width:16px;height:16px;color:var(--text-muted);flex-shrink:0}
         .drawer-chat-item-title{font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
         .drawer-chat-item.active-chat .drawer-chat-item-title{color:var(--primary)}
-        .chat-delete-btn{background:transparent;border:none;cursor:pointer;padding:4px;color:var(--text-muted);border-radius:6px;opacity:0;flex-shrink:0;display:flex}
+        .chat-delete-btn{background:transparent;border:none;cursor:pointer;padding:6px;color:var(--text-muted);border-radius:6px;opacity:0;flex-shrink:0;display:flex;transition:opacity .15s,color .15s}
         .drawer-chat-item:hover .chat-delete-btn{opacity:1}
         .chat-delete-btn:hover{color:#ea4335}
+        @media(hover:none){.chat-delete-btn{opacity:1}}  /* always show on touch screens */
+
+        .clear-all-btn{width:calc(100% - 40px);margin:4px 20px;padding:9px;background:transparent;border:1px solid var(--border);border-radius:10px;color:#ea4335;font-size:13px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Google Sans Text',sans-serif}
+        .clear-all-btn:hover,.clear-all-btn:active{background:rgba(234,67,53,.08)}
+        .clear-all-btn svg{width:14px;height:14px}
+
         .drawer-new-chat{display:flex;align-items:center;gap:14px;padding:13px 20px;cursor:pointer;border-top:1px solid var(--border)}
         .drawer-new-chat:active{background:var(--surface2)}
         .drawer-new-chat svg{width:20px;height:20px;color:var(--text-muted)}
@@ -305,6 +311,10 @@
     </div>
     <div class="drawer-section-title">Recent Chats</div>
     <div class="drawer-chat-list" id="drawer-chat-list"></div>
+    <button class="clear-all-btn" onclick="clearAllChats()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Clear all chats
+    </button>
     <div class="drawer-new-chat" onclick="createNewChat();closeDrawer()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
         <span>New Chat</span>
@@ -615,6 +625,14 @@ function createChatLS(firstMessage){
     var id='chat_'+Date.now();var title=firstMessage.length>42?firstMessage.substring(0,42)+'…':firstMessage;
     var chats=getAllChats();chats[id]={id:id,title:title,messages:[],updatedAt:Date.now()};
     saveAllChats(chats);currentChatId=id;renderChatLists(id);return id;
+}
+
+
+function clearAllChats(){
+    if(!confirm('Delete ALL saved chats? This cannot be undone.'))return;
+    localStorage.removeItem(LS_CHATS);
+    createNewChat();
+    closeDrawer();
 }
 
 function deleteChatLS(id,e){
