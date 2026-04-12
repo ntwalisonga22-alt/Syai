@@ -15,16 +15,7 @@ export default async function handler(req, res) {
         });
     }
 
-    // ── CHAT via Gemini with Google Search grounding (live internet) ──
-    try {
-        const userParts = [];
-        if (imageData && imageMimeType) userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
-        if (fileData && fileMimeType)   userParts.push({ inlineData: { mimeType: fileMimeType,  data: fileData  } });
-        if (message) userParts.push({ text: message });
-
-        const requestBody = {
-            system_instruction: {
-                parts: [{ text: `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan — a Digital Creator and Content Creator born on December 5, 2000 (Instagram: instagram.com/sawungayvan).
+    const systemPrompt = `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan — a Digital Creator and Content Creator born on December 5, 2000 (Instagram: instagram.com/sawungayvan).
 
 Your personality:
 - Clear, direct, and genuinely helpful
@@ -34,63 +25,48 @@ Your personality:
 - For technical questions: be precise and thorough
 - For creative tasks: be expressive and original
 - For analysis (images, files, documents): be detailed and structured
-- You have access to live Google Search — use it to answer questions about current events, news, prices, weather, sports scores, and anything that requires up-to-date information
-- When you use web search, you can mention that the information is from the web
-- If someone asks who made you, answer proudly about S. Yvan` }]
-            },
-            contents: [...history, { role: 'user', parts: userParts }],
-            // Enable Google Search grounding for live internet access
-            tools: [{ googleSearch: {} }],
-            toolConfig: {
-                functionCallingConfig: { mode: 'AUTO' }
+- You have access to live Google Search — use it for current events, news, prices, weather, sports and anything time-sensitive
+- If someone asks who made you, answer proudly about S. Yvan`;
+
+    const userParts = [];
+    if (imageData && imageMimeType) userParts.push({ inlineData: { mimeType: imageMimeType, data: imageData } });
+    if (fileData && fileMimeType)   userParts.push({ inlineData: { mimeType: fileMimeType,  data: fileData  } });
+    if (message) userParts.push({ text: message });
+
+    const hasFile = !!(imageData || fileData);
+
+    // ── Try with Google Search grounding (text-only queries) ──
+    if (!hasFile) {
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemPrompt }] },
+                        contents: [...history, { role: 'user', parts: userParts }],
+                        tools: [{ googleSearch: {} }]
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!data.error) {
+                const parts = data.candidates?.[0]?.content?.parts || [];
+                const aiReply = parts.map(p => p.text || '').join('').trim() || "I didn't quite get that. Could you try again?";
+                const usedSearch = !!(data.candidates?.[0]?.groundingMetadata?.webSearchQueries?.length);
+                return res.status(200).json({ reply: aiReply, isError: false, usedSearch });
             }
-        };
-
-        // Use gemini-2.0-flash for search grounding (supports it better)
-        const model = (imageData || fileData) ? 'gemini-2.5-flash-lite' : 'gemini-2.0-flash';
-
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
+            // If grounding-specific error, fall through to plain chat
+            if (data.error.code !== 400 && data.error.code !== 429) {
+                return res.status(200).json({ reply: data.error.message, isError: true });
             }
-        );
-
-        const data = await response.json();
-
-        if (data.error) {
-            // If grounding fails, retry without it
-            if (data.error.code === 400) {
-                return await chatWithoutGrounding(key, userParts, history, res);
-            }
-            let msg = data.error.message;
-            if (data.error.code === 429) msg = "I'm handling too many requests right now. Please wait a moment and try again.";
-            return res.status(200).json({ reply: msg, isError: true });
-        }
-
-        // Extract text from response (grounding may return multiple parts)
-        const parts = data.candidates?.[0]?.content?.parts || [];
-        const aiReply = parts.map(p => p.text || '').join('').trim()
-            || "I didn't quite get that. Could you try again?";
-
-        // Check if grounding/search was used
-        const usedSearch = data.candidates?.[0]?.groundingMetadata?.webSearchQueries?.length > 0;
-
-        res.status(200).json({
-            reply: aiReply,
-            isError: false,
-            usedSearch: usedSearch || false
-        });
-
-    } catch (err) {
-        res.status(200).json({ reply: 'Connection error. Please check your network and try again.', isError: true });
+        } catch (_) {}
     }
-}
 
-// Fallback: chat without search grounding (for image/file analysis)
-async function chatWithoutGrounding(key, userParts, history, res) {
+    // ── Fallback: plain chat (no grounding) — for files/images or if grounding failed ──
     try {
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
@@ -98,17 +74,24 @@ async function chatWithoutGrounding(key, userParts, history, res) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    system_instruction: {
-                        parts: [{ text: `You are SY AI, a smart, helpful, and friendly assistant created and trained by S. Yvan. Use emojis only when they naturally fit. For code, always use markdown code blocks with the language specified.` }]
-                    },
-                    contents: [...history, { role: 'user', parts: userParts }],
+                    system_instruction: { parts: [{ text: systemPrompt }] },
+                    contents: [...history, { role: 'user', parts: userParts }]
                 })
             }
         );
+
         const data = await response.json();
+
+        if (data.error) {
+            let msg = data.error.message || 'Something went wrong.';
+            if (data.error.code === 429) msg = 'Rate limit reached. Please wait 30 seconds and try again.';
+            return res.status(200).json({ reply: msg, isError: true });
+        }
+
         const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I didn't quite get that. Could you try again?";
-        return res.status(200).json({ reply: aiReply, isError: false });
+        return res.status(200).json({ reply: aiReply, isError: false, usedSearch: false });
+
     } catch (err) {
-        return res.status(200).json({ reply: 'Connection error. Please try again.', isError: true });
+        return res.status(200).json({ reply: 'Connection error. Please check your network and try again.', isError: true });
     }
 }
