@@ -232,6 +232,69 @@
         }
         @media(max-width:380px){.card-sub{display:none}.card-title{font-size:12px}}
 
+
+        /* ── IANNA CHAT ── */
+        #ianna-login{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:none;align-items:center;justify-content:center;padding:20px}
+        #ianna-login.show{display:flex}
+        .ianna-login-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px 28px;width:100%;max-width:320px;text-align:center}
+        .ianna-login-heart{font-size:48px;margin-bottom:12px;display:block}
+        .ianna-login-title{font-family:'Google Sans',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+        .ianna-login-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px}
+        .ianna-login-input{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:12px;outline:none;font-size:16px;margin-bottom:12px;-webkit-appearance:none;text-align:center;letter-spacing:3px}
+        .ianna-login-input:focus{border-color:#ff6b9d}
+        .ianna-login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#ea4335,#ff6b9d);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Google Sans',sans-serif;margin-bottom:10px}
+        .ianna-login-err{font-size:12px;color:#ea4335;margin-top:6px;display:none}
+        .ianna-login-cancel{font-size:12px;color:var(--text-muted);cursor:pointer;display:block;margin-top:8px}
+
+        /* Ianna chat screen (full screen for her) */
+        #ianna-chat-overlay{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;flex-direction:column}
+        #ianna-chat-overlay.show{display:flex}
+        .ianna-topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;padding-top:calc(14px + var(--safe-top));background:var(--side);border-bottom:1px solid var(--border);flex-shrink:0}
+        .ianna-topbar-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ea4335,#ff6b9d);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .ianna-topbar-info{flex:1}
+        .ianna-topbar-name{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:600;color:var(--text)}
+        .ianna-topbar-status{font-size:11px;color:var(--gem4)}
+        .ianna-close-btn{background:transparent;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center}
+        .ianna-close-btn:hover{background:var(--surface2)}
+        .ianna-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+        .ianna-messages::-webkit-scrollbar{width:4px}
+        .ianna-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+        .ianna-msg{max-width:78%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word;animation:fadeUp .2s ease}
+        .ianna-msg.me{align-self:flex-end;background:linear-gradient(135deg,#ea4335,#ff6b9d);color:#fff;border-radius:18px 18px 4px 18px}
+        .ianna-msg.her{align-self:flex-start;background:var(--surface2);color:var(--text);border-radius:18px 18px 18px 4px}
+        .ianna-msg-meta{font-size:10px;opacity:.6;margin-top:4px;text-align:right}
+        .ianna-msg.her .ianna-msg-meta{text-align:left}
+        .ianna-msg-sender{font-size:10px;font-weight:600;margin-bottom:3px;opacity:.8}
+        .ianna-input-area{padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));background:var(--nav-bg);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+        .ianna-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:10px 16px;outline:none;font-size:15px;font-family:'Google Sans Text',sans-serif;resize:none;min-height:40px;max-height:100px;overflow-y:auto;line-height:1.4;-webkit-appearance:none}
+        .ianna-input:focus{border-color:#ff6b9d}
+        .ianna-send-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ea4335,#ff6b9d);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,opacity .15s}
+        .ianna-send-btn:hover{transform:scale(1.08)}
+        .ianna-send-btn:disabled{opacity:.4}
+        .ianna-empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px}
+        .ianna-day-divider{text-align:center;font-size:11px;color:var(--text-muted);margin:8px 0;position:relative}
+        .ianna-day-divider::before,.ianna-day-divider::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:var(--border)}
+        .ianna-day-divider::before{left:0}.ianna-day-divider::after{right:0}
+
+        /* Private chat tab inside admin panel */
+        .admin-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;flex-shrink:0}
+        .admin-tab{padding:11px 20px;font-size:14px;font-family:'Google Sans',sans-serif;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none}
+        .admin-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
+        .admin-tab-content{display:none}
+        .admin-tab-content.active{display:block}
+
+        /* Admin private chat */
+        .admin-chat-wrap{height:400px;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--bg)}
+        .admin-chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+        .admin-chat-msgs::-webkit-scrollbar{width:4px}
+        .admin-chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+        .admin-chat-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface);align-items:flex-end}
+        .admin-chat-textarea{flex:1;background:transparent;border:none;color:var(--text);outline:none;font-size:14px;font-family:'Google Sans Text',sans-serif;resize:none;min-height:22px;max-height:80px;line-height:1.4;padding:2px 0}
+        .admin-chat-textarea::placeholder{color:var(--text-muted)}
+        .admin-chat-send{background:linear-gradient(135deg,#ea4335,#ff6b9d);color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+        .admin-chat-send:hover{transform:scale(1.08)}
+        .admin-chat-send:disabled{opacity:.4}
+
         /* ── ADMIN PANEL ── */
         #admin-overlay{position:fixed;inset:0;background:var(--bg);z-index:8000;display:none;flex-direction:column;overflow:hidden}
         #admin-overlay.show{display:flex}
@@ -279,6 +342,38 @@
         #sidebar:hover .admin-link span{opacity:1}
 
     </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // ══════════════════════════════════════
+        // 🔥 REPLACE THESE WITH YOUR FIREBASE CONFIG
+        // Firebase Console → Project Settings → Your Apps → Web
+        // Also enable Realtime Database in Firebase Console
+        // ══════════════════════════════════════
+        const firebaseConfig = {
+            apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+            authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+            databaseURL:       "REPLACE_WITH_YOUR_DATABASE_URL",
+            projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+            storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+            messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+            appId:             "REPLACE_WITH_YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        window._firebaseDB    = db;
+        window._firebaseRef   = ref;
+        window._firebasePush  = push;
+        window._firebaseOn    = onValue;
+        window._firebaseOff   = off;
+        window._firebaseTS    = serverTimestamp;
+        window.dispatchEvent(new Event('firebaseReady'));
+    </script>
 </head>
 <body>
 
@@ -497,7 +592,7 @@ var dingSound=new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
     setupFileInputs();
 })();
 
-function login(){var v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-input').focus();return;}userName=v;localStorage.setItem(LS_NAME,v);document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser(v);}
+function login(){var v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-input').focus();return;}if(v.toLowerCase()==='ianna'){openIannaLogin();return;}userName=v;localStorage.setItem(LS_NAME,v);document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser(v);}
 function loginSkip(){userName='Guest';document.getElementById('auth-overlay').style.display='none';updateUserUI();renderChatLists();registerUser('Guest');}
 function changeName(){var n=prompt('Change your name:',userName);if(n&&n.trim()){userName=n.trim();localStorage.setItem(LS_NAME,userName);updateUserUI();}}
 
@@ -956,7 +1051,159 @@ function escapeHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAdmin();closeAdminLogin();}});
+
+// ══════════════════════════════════════
+// IANNA PRIVATE CHAT
+// ══════════════════════════════════════
+var IANNA_PASS = 'ianna2000';
+var iannaRole  = null; // 'admin' or 'ianna'
+var iannaListener = null;
+
+// Called when Ianna's name is entered on main auth — check if it's Ianna
+function checkIfIanna(name) {
+    if (name.toLowerCase() === 'ianna') {
+        // Show Ianna login instead of normal app
+        setTimeout(function() {
+            document.getElementById('auth-overlay').style.display = 'flex';
+            openIannaLogin();
+        }, 100);
+        return true;
+    }
+    return false;
+}
+
+function openIannaLogin() {
+    document.getElementById('ianna-login').classList.add('show');
+    document.getElementById('ianna-pwd-input').value = '';
+    document.getElementById('ianna-login-err').style.display = 'none';
+    setTimeout(function(){ document.getElementById('ianna-pwd-input').focus(); }, 150);
+}
+
+function closeIannaLogin() {
+    document.getElementById('ianna-login').classList.remove('show');
+}
+
+function iannaLogin() {
+    var pwd = document.getElementById('ianna-pwd-input').value;
+    if (pwd === IANNA_PASS) {
+        closeIannaLogin();
+        document.getElementById('auth-overlay').style.display = 'none';
+        iannaRole = 'ianna';
+        openIannaChat();
+    } else {
+        document.getElementById('ianna-login-err').style.display = 'block';
+        document.getElementById('ianna-pwd-input').value = '';
+        document.getElementById('ianna-pwd-input').focus();
+    }
+}
+
+function openIannaChat() {
+    document.getElementById('ianna-chat-overlay').classList.add('show');
+    listenIannaMessages('ianna-messages', false);
+}
+
+function closeIannaChat() {
+    document.getElementById('ianna-chat-overlay').classList.remove('show');
+    detachIannaListener();
+}
+
+// Admin opens chat tab
+function openAdminChatTab() {
+    iannaRole = 'admin';
+    listenIannaMessages('admin-chat-msgs', true);
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelector('[onclick="switchAdminTab(\''+tab+'\')"]').classList.add('active');
+    document.getElementById('admin-tab-'+tab).classList.add('active');
+    if (tab === 'chat') openAdminChatTab();
+    else detachIannaListener();
+}
+
+function listenIannaMessages(containerId, isAdmin) {
+    if (!window._firebaseDB) {
+        document.getElementById(containerId).innerHTML =
+            '<div class="ianna-empty">⚠️ Firebase not configured yet.<br>Add your Firebase config to activate the chat.</div>';
+        return;
+    }
+    detachIannaListener();
+    var msgsRef = window._firebaseRef(window._firebaseDB, 'ianna_chat/messages');
+    iannaListener = { ref: msgsRef, container: containerId };
+    window._firebaseOn(msgsRef, function(snapshot) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var data = snapshot.val();
+        if (!data) {
+            container.innerHTML = '<div class="ianna-empty">💌 No messages yet. Say something!</div>';
+            return;
+        }
+        var messages = Object.values(data).sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+        var html = '';
+        var lastDate = '';
+        messages.forEach(function(msg) {
+            var d = msg.ts ? new Date(msg.ts) : new Date();
+            var dateStr = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+            if (dateStr !== lastDate) {
+                html += '<div class="ianna-day-divider">'+dateStr+'</div>';
+                lastDate = dateStr;
+            }
+            var isMe = isAdmin ? (msg.sender === 'admin') : (msg.sender === 'ianna');
+            var cls = isMe ? 'me' : 'her';
+            var senderLabel = msg.sender === 'admin' ? 'S. Yvan 💝' : 'Ianna 💌';
+            var timeStr = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+            html += '<div class="ianna-msg '+cls+'">';
+            if (!isMe) html += '<div class="ianna-msg-sender">'+senderLabel+'</div>';
+            html += escapeHtml(msg.text);
+            html += '<div class="ianna-msg-meta">'+timeStr+'</div>';
+            html += '</div>';
+        });
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    });
+}
+
+function detachIannaListener() {
+    if (iannaListener) {
+        try { window._firebaseOff(iannaListener.ref); } catch(e) {}
+        iannaListener = null;
+    }
+}
+
+function sendIannaMessage(source) {
+    var inputId = source === 'ianna' ? 'ianna-input' : 'admin-chat-input';
+    var btnId   = source === 'ianna' ? 'ianna-send-btn' : 'admin-chat-send';
+    var input   = document.getElementById(inputId);
+    var text    = input ? input.value.trim() : '';
+    if (!text) return;
+    if (!window._firebaseDB) { alert('Firebase not configured yet.'); return; }
+
+    var sender = source === 'ianna' ? 'ianna' : 'admin';
+    var msgsRef = window._firebaseRef(window._firebaseDB, 'ianna_chat/messages');
+    var btn = document.getElementById(btnId);
+    if (btn) btn.disabled = true;
+
+    window._firebasePush(msgsRef, {
+        text: text,
+        sender: sender,
+        ts: Date.now()
+    }).then(function() {
+        input.value = '';
+        input.style.height = 'auto';
+        if (btn) btn.disabled = false;
+    }).catch(function(err) {
+        alert('Failed to send: ' + err.message);
+        if (btn) btn.disabled = false;
+    });
+}
+
+// Listen for Firebase ready
+window.addEventListener('firebaseReady', function() {
+    console.log('Firebase ready for Ianna chat');
+});
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAdmin();closeAdminLogin();closeIannaChat();closeIannaLogin();}});
 if('visualViewport' in window){window.visualViewport.addEventListener('resize',function(){var win=document.getElementById('chat-window');if(win)win.scrollTop=win.scrollHeight;});}
 </script>
 
@@ -984,6 +1231,14 @@ if('visualViewport' in window){window.visualViewport.addEventListener('resize',f
         <button class="admin-close-btn" onclick="closeAdmin()">✕ Close</button>
     </div>
     <div class="admin-body">
+        <!-- Tab bar -->
+        <div class="admin-tab-bar">
+            <button class="admin-tab active" onclick="switchAdminTab('dashboard')">📊 Dashboard</button>
+            <button class="admin-tab" onclick="switchAdminTab('chat')">💌 Private Chat</button>
+        </div>
+
+        <!-- Dashboard tab -->
+        <div class="admin-tab-content active" id="admin-tab-dashboard">
         <div class="admin-stats">
             <div class="admin-stat-card"><div class="admin-stat-num" id="admin-total">0</div><div class="admin-stat-label">Total Users</div></div>
             <div class="admin-stat-card"><div class="admin-stat-num" id="admin-active">0</div><div class="admin-stat-label">Active (last 24h)</div></div>
@@ -995,15 +1250,67 @@ if('visualViewport' in window){window.visualViewport.addEventListener('resize',f
             <div class="admin-empty">No users found yet.</div>
         </div>
 
-        <div style="text-align:center;margin-top:60px;padding:40px 20px;border-top:1px solid var(--border)">
-            <div style="font-family:'Google Sans',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:700;background:linear-gradient(135deg,#ea4335,#ff6b9d,#fbbc05);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.3;letter-spacing:-0.5px">
-                I LOVE YOU IANNA
+        </div><!-- end dashboard tab -->
+
+        <!-- Private chat tab -->
+        <div class="admin-tab-content" id="admin-tab-chat">
+            <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">
+                💌 Private chat between you and Ianna — synced in real time via Firebase.
             </div>
-            <div style="font-size:48px;margin-top:14px;animation:heartbeat 1.2s ease-in-out infinite">
-                &#x2764;&#xFE0F;&#x1FAC2;
+            <div class="admin-chat-wrap">
+                <div class="admin-chat-msgs" id="admin-chat-msgs">
+                    <div class="ianna-empty">No messages yet. Say hi! 💌</div>
+                </div>
+                <div class="admin-chat-input-row">
+                    <textarea class="admin-chat-textarea" id="admin-chat-input" placeholder="Message Ianna..." rows="1"
+                        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIannaMessage('admin')}"></textarea>
+                    <button class="admin-chat-send" id="admin-chat-send" onclick="sendIannaMessage('admin')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l8 8H4l8-8z"/></svg>
+                    </button>
+                </div>
             </div>
+        </div><!-- end chat tab -->
+    </div>
+</div>
+
+
+<!-- IANNA LOGIN -->
+<div id="ianna-login">
+    <div class="ianna-login-box">
+        <span class="ianna-login-heart">💌</span>
+        <div class="ianna-login-title">Private Chat</div>
+        <div class="ianna-login-sub">Enter your password, Ianna</div>
+        <input type="password" id="ianna-pwd-input" class="ianna-login-input" placeholder="••••••"
+            maxlength="12" onkeypress="if(event.key==='Enter')iannaLogin()">
+        <button class="ianna-login-btn" onclick="iannaLogin()">Open Chat 💬</button>
+        <div class="ianna-login-err" id="ianna-login-err">Wrong password. Try again.</div>
+        <span class="ianna-login-cancel" onclick="closeIannaLogin()">Cancel</span>
+    </div>
+</div>
+
+<!-- IANNA FULL CHAT (her view) -->
+<div id="ianna-chat-overlay">
+    <div class="ianna-topbar">
+        <div class="ianna-topbar-avatar">💝</div>
+        <div class="ianna-topbar-info">
+            <div class="ianna-topbar-name">S. Yvan</div>
+            <div class="ianna-topbar-status">● Online</div>
         </div>
-        <style>@keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}</style>
+        <button class="ianna-close-btn" onclick="closeIannaChat()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div class="ianna-messages" id="ianna-messages">
+        <div class="ianna-empty">💌 No messages yet.<br>Say something!</div>
+    </div>
+    <div class="ianna-input-area">
+        <textarea class="ianna-input" id="ianna-input" placeholder="Type a message..." rows="1"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIannaMessage('ianna')}"></textarea>
+        <button class="ianna-send-btn" id="ianna-send-btn" onclick="sendIannaMessage('ianna')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l8 8H4l8-8z"/></svg>
+        </button>
     </div>
 </div>
 
